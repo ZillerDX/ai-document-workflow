@@ -1,0 +1,6 @@
+@AiDocumentWorkflow.Api_HostAddress = http://localhost:5053
+
+GET {{AiDocumentWorkflow.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

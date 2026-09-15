@@ -1,0 +1,27 @@
+# Build and output directories
+bin/
+obj/
+dist/
+out/
+node_modules/
+.angular/
+**/.angular/
+**/node_modules/
+**/bin/
+**/obj/
+**/dist/
+
+# Local configuration and secrets
+*.Local.json
+*.local.json
+.env*
+!.env.example
+
+# Local SQLite databases and temp files
+*.db
+*.db-shm
+*.db-wal
+uploads/
+.playwright-mcp/
+*.log
+
