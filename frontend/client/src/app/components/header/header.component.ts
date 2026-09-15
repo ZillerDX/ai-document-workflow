@@ -29,7 +29,7 @@ import { UserPersona } from '../../models/document.model';
       <div class="header-actions">
         <!-- Persona Role Switcher -->
         <div class="persona-menu-container">
-          <button type="button" class="persona-button" (click)="togglePersonaMenu()">
+          <button type="button" class="persona-button" (click)="togglePersonaMenu($event)">
             <div class="persona-avatar">
               {{ currentPersona().name.charAt(0) }}
             </div>
@@ -45,7 +45,7 @@ import { UserPersona } from '../../models/document.model';
           </button>
 
           @if (isPersonaMenuOpen()) {
-            <div class="persona-dropdown">
+            <div class="persona-dropdown" (click)="$event.stopPropagation()">
               <div class="dropdown-header">Switch Active Role</div>
               @for (p of authService.personas; track p.id) {
                 <div 
@@ -287,7 +287,10 @@ export class HeaderComponent {
 
   constructor(private elementRef: ElementRef) {}
 
-  togglePersonaMenu() {
+  togglePersonaMenu(event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+    }
     this.isPersonaMenuOpen.update(v => !v);
   }
 
