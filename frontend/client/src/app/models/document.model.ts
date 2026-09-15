@@ -53,6 +53,8 @@ export interface DocumentItem {
   documentType: 'Invoice' | 'Quotation' | 'PurchaseOrder' | 'Receipt';
   originalFileName: string;
   storedFilePath?: string;
+  fileDataUrl?: string;
+  samplePdfUrl?: string;
   contentType?: string;
   fileSizeBytes: number;
   vendorName: string;

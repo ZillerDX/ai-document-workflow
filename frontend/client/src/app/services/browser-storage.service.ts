@@ -172,12 +172,25 @@ export class BrowserStorageService {
         }
       ];
 
+      let fileDataUrl: string | undefined;
+      try {
+        fileDataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+      } catch {
+        fileDataUrl = undefined;
+      }
+
       const newDoc: DocumentItem = {
         id: docId,
         documentNumber: docNumber,
         documentType: docType,
         originalFileName: file.name,
         fileSizeBytes: file.size,
+        fileDataUrl,
         vendorName: 'Enterprise Partner Corp',
         customerName: 'Enterprise Global Corp',
         taxId: 'US-' + Math.floor(100000000 + Math.random() * 900000000),
@@ -240,9 +253,11 @@ export class BrowserStorageService {
       let summary = '';
       let fileName = '';
 
+      let samplePdfUrl = 'samples/Sample_1_Invoice_Clean.pdf';
+
       if (isAnomaly) {
         docNumber = 'INV-2025-' + Math.floor(1000 + Math.random() * 9000);
-        vendorName = 'Hyperion Networks';
+        vendorName = 'Hyperion Networks LLC';
         docType = 'Invoice';
         subTotal = 10000;
         taxRate = 7.0;
@@ -251,20 +266,22 @@ export class BrowserStorageService {
         anomalyDetected = true;
         anomalyNotes = 'Tax calculation mismatch: 7% of $10,000 should be $700, but document billed $1,500.';
         summary = 'Irregular tax calculation detected. Tax rate billed at 15% instead of statutory 7%. Requires reconciliation.';
-        fileName = 'Hyperion_Network_Overcharge.pdf';
+        fileName = 'Sample_2_Invoice_Tax_Anomaly.pdf';
+        samplePdfUrl = 'samples/Sample_2_Invoice_Tax_Anomaly.pdf';
       } else if (isQuote) {
         docNumber = 'QUO-2025-' + Math.floor(1000 + Math.random() * 9000);
-        vendorName = 'Nexus AI Cluster Solutions';
+        vendorName = 'Nexus AI Systems Inc.';
         docType = 'Quotation';
         subTotal = 7800;
         taxRate = 7.0;
         taxAmount = 546;
         totalAmount = 8346;
         summary = 'Enterprise quotation for dedicated GPU hardware clusters. Verified clean math.';
-        fileName = 'Nexus_AI_Cluster_Quote.pdf';
+        fileName = 'Sample_3_Quotation_GPU_Cluster.pdf';
+        samplePdfUrl = 'samples/Sample_3_Quotation_GPU_Cluster.pdf';
       } else if (isPo) {
         docNumber = 'PO-2025-' + Math.floor(1000 + Math.random() * 9000);
-        vendorName = 'Starlight Furnishings';
+        vendorName = 'Starlight Furnishings Corp.';
         docType = 'PurchaseOrder';
         subTotal = 4000;
         taxRate = 7.1;
@@ -272,7 +289,8 @@ export class BrowserStorageService {
         totalAmount = 4284;
         currency = 'EUR';
         summary = 'Corporate procurement PO for office ergonomic hardware. All line items verified.';
-        fileName = 'Starlight_Procurement_PO.pdf';
+        fileName = 'Sample_3_Quotation_GPU_Cluster.pdf';
+        samplePdfUrl = 'samples/Sample_3_Quotation_GPU_Cluster.pdf';
       } else {
         docNumber = 'INV-2025-' + Math.floor(1000 + Math.random() * 9000);
         vendorName = 'Acme Cloud Services Corp.';
@@ -282,7 +300,8 @@ export class BrowserStorageService {
         taxAmount = 364;
         totalAmount = 5564;
         summary = 'Monthly SaaS cloud infrastructure bill with itemized computing clusters. Verified clean.';
-        fileName = 'Acme_Cloud_Services_Invoice.pdf';
+        fileName = 'Sample_1_Invoice_Clean.pdf';
+        samplePdfUrl = 'samples/Sample_1_Invoice_Clean.pdf';
       }
 
       const lineItems: DocumentLineItem[] = [
@@ -320,6 +339,7 @@ export class BrowserStorageService {
         documentNumber: docNumber,
         documentType: docType,
         originalFileName: fileName,
+        samplePdfUrl: samplePdfUrl,
         fileSizeBytes: 245000,
         vendorName,
         customerName: 'Enterprise Global Corp',

@@ -23,12 +23,27 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
             <h2 class="doc-title">{{ doc.vendorName }}</h2>
           </div>
           
-          <button type="button" class="close-btn" (click)="closed.emit()" title="Close (Esc)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <div class="header-right-actions">
+            <button 
+              type="button" 
+              class="btn-open-original" 
+              (click)="openOriginalFile()" 
+              title="Open Original Document / PDF in new tab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>Open Original File</span>
+            </button>
+
+            <button type="button" class="close-btn" (click)="closed.emit()" title="Close (Esc)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Modal Body (Two-Column Split Layout) -->
@@ -37,6 +52,24 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
           <div class="left-column">
             <!-- Document Visual Sheet / Preview -->
             <div class="preview-sheet">
+              <div class="sheet-original-bar">
+                <div class="sheet-original-meta">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  <span class="sheet-original-filename truncate">{{ doc.originalFileName }}</span>
+                </div>
+                <button type="button" class="btn-sheet-original-link" (click)="openOriginalFile()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  <span>View / Download PDF</span>
+                </button>
+              </div>
+
               <div class="sheet-header">
                 <div class="sheet-company">
                   <div class="sheet-vendor">{{ doc.vendorName }}</div>
@@ -514,6 +547,33 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
       letter-spacing: -0.01em;
     }
 
+    .header-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-open-original {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .btn-open-original:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
     .close-btn {
       background: transparent;
       border: none;
@@ -526,6 +586,51 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
     .close-btn:hover {
       background-color: var(--bg-subtle);
       color: var(--text-primary);
+    }
+
+    .sheet-original-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.6rem 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .sheet-original-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      max-width: 60%;
+    }
+
+    .sheet-original-filename {
+      font-family: 'JetBrains Mono', monospace;
+      color: #94a3b8;
+    }
+
+    .btn-sheet-original-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: transparent;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .btn-sheet-original-link:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
     }
 
     .modal-body-split {
@@ -1235,6 +1340,133 @@ export class DocumentModalComponent implements OnInit {
         this.isSubmitting = false;
       }
     });
+  }
+
+  openOriginalFile() {
+    if (!this.doc) return;
+
+    // 1. If document has a fileDataUrl (user-uploaded file)
+    if (this.doc.fileDataUrl) {
+      const win = window.open();
+      if (win) {
+        if (this.doc.fileDataUrl.startsWith('data:application/pdf')) {
+          win.document.write(`
+            <!DOCTYPE html><html><head><title>${this.doc.originalFileName} - Original PDF</title></head>
+            <body style="margin:0;padding:0;overflow:hidden;background:#1e293b;">
+              <iframe src="${this.doc.fileDataUrl}" frameborder="0" style="width:100%;height:100vh;border:none;" allowfullscreen></iframe>
+            </body></html>
+          `);
+        } else {
+          win.document.write(`
+            <!DOCTYPE html><html><head><title>${this.doc.originalFileName} - Original Document</title></head>
+            <body style="margin:0;padding:24px;background:#0f172a;display:flex;justify-content:center;align-items:center;min-height:100vh;">
+              <img src="${this.doc.fileDataUrl}" style="max-width:95%;max-height:95vh;box-shadow:0 10px 25px rgba(0,0,0,0.5);border-radius:8px;" />
+            </body></html>
+          `);
+        }
+        win.document.close();
+        return;
+      }
+    }
+
+    // 2. If it has a samplePdfUrl or matches a known sample
+    let sampleUrl = this.doc.samplePdfUrl;
+    if (!sampleUrl) {
+      const fn = (this.doc.originalFileName || '').toLowerCase();
+      const vn = (this.doc.vendorName || '').toLowerCase();
+      if (this.doc.aiAnomalyDetected || fn.includes('anomaly') || fn.includes('overcharge') || vn.includes('hyperion')) {
+        sampleUrl = 'samples/Sample_2_Invoice_Tax_Anomaly.pdf';
+      } else if (this.doc.documentType === 'Quotation' || vn.includes('nexus') || fn.includes('quote')) {
+        sampleUrl = 'samples/Sample_3_Quotation_GPU_Cluster.pdf';
+      } else {
+        sampleUrl = 'samples/Sample_1_Invoice_Clean.pdf';
+      }
+    }
+
+    if (sampleUrl) {
+      window.open(sampleUrl, '_blank');
+      return;
+    }
+
+    // 3. Fallback: Printable Document View
+    this.printGeneratedOriginal();
+  }
+
+  private printGeneratedOriginal() {
+    const w = window.open('', '_blank');
+    if (!w) return;
+    const doc = this.doc;
+    const itemsHtml = (doc.lineItems || []).map(item => `
+      <tr>
+        <td style="padding:10px; border-bottom:1px solid #e2e8f0;">${item.description}</td>
+        <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:center;">${item.quantity}</td>
+        <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right;">$${item.unitPrice.toFixed(2)}</td>
+        <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:bold;">$${item.amount.toFixed(2)}</td>
+      </tr>
+    `).join('');
+
+    w.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${doc.documentNumber} - ${doc.vendorName}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; color: #0f172a; line-height: 1.5; }
+          .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 24px; }
+          .title { font-size: 26px; font-weight: 800; color: #0f172a; }
+          .meta-grid { display: flex; justify-content: space-between; margin-bottom: 30px; background: #f8fafc; padding: 16px; border-radius: 8px; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; font-size: 12px; font-weight: 700; color: #475569; }
+          .totals { margin-left: auto; width: 300px; margin-top: 24px; }
+          .totals-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+          .total-due { font-weight: 800; font-size: 20px; border-top: 2px solid #0f172a; border-bottom: none; padding-top: 12px; color: #0f172a; }
+          .print-btn { background: #0284c7; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-bottom: 20px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+        <div class="header">
+          <div>
+            <div class="title">${doc.vendorName}</div>
+            <div style="color:#64748b; font-size:14px;">Tax ID / VAT: ${doc.taxId || 'N/A'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size: 20px; font-weight: 800; color:#0284c7;">${doc.documentType.toUpperCase()}</div>
+            <div style="font-family:monospace; font-weight:bold;">${doc.documentNumber}</div>
+          </div>
+        </div>
+        <div class="meta-grid">
+          <div>
+            <strong style="font-size:12px; color:#64748b; text-transform:uppercase;">Billed To:</strong><br>
+            <span style="font-size:16px; font-weight:bold;">${doc.customerName}</span><br>
+            <span style="color:#64748b; font-size:13px;">Corporate Accounts Payable</span>
+          </div>
+          <div style="text-align:right;">
+            <strong>Issue Date:</strong> ${doc.issueDate || 'N/A'}<br>
+            <strong>Due Date:</strong> ${doc.dueDate || 'N/A'}
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>DESCRIPTION</th>
+              <th style="text-align:center;">QTY</th>
+              <th style="text-align:right;">UNIT PRICE</th>
+              <th style="text-align:right;">AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+        <div class="totals">
+          <div class="totals-row"><span>Subtotal:</span><span>$${doc.subTotal.toFixed(2)}</span></div>
+          <div class="totals-row"><span>Tax (${doc.taxRate}%):</span><span>$${doc.taxAmount.toFixed(2)}</span></div>
+          <div class="totals-row total-due"><span>Total Due:</span><span>$${doc.totalAmount.toFixed(2)}</span></div>
+        </div>
+      </body>
+      </html>
+    `);
+    w.document.close();
   }
 
   onBackdropClick(event: MouseEvent) {

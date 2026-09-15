@@ -1,4 +1,4 @@
-﻿# AI-Powered Document Workflow & Segregation of Duties (SoD) Engine
+# AI-Powered Document Workflow & Segregation of Duties (SoD) Engine
 
 [![Live Demo on GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://zillerdx.github.io/ai-document-workflow/)
 [![Angular](https://img.shields.io/badge/Angular-19-dd0031?style=for-the-badge&logo=angular)](https://angular.dev/)
@@ -95,6 +95,10 @@ ai-document-workflow/
 ├── .gitignore                          # Excludes build artifacts, secrets, and node_modules
 ├── CONTEXT.md                          # Domain architecture, state machine, and entity contracts
 ├── README.md                           # Comprehensive documentation and system guide
+├── sample-documents/                   # Standard test documents for verification & upload testing
+│   ├── Sample_1_Invoice_Clean.pdf          # Clean standard invoice ($5,564.00, 100% math verified)
+│   ├── Sample_2_Invoice_Tax_Anomaly.pdf    # Invoice with intentional tax anomaly ($11,500.00)
+│   └── Sample_3_Quotation_GPU_Cluster.pdf  # Quotation for AI GPU cluster ($8,346.00)
 │
 ├── frontend/
 │   └── client/                         # Angular 19 Standalone Single-File Component Architecture
@@ -103,6 +107,7 @@ ai-document-workflow/
 │       ├── tsconfig.json               # Modern ES2022 TypeScript configuration
 │       ├── serve-spa.js                # Local zero-dependency SPA fallback preview server
 │       ├── public/                     # Static browser assets
+│       │   └── samples/                # Mirrored sample PDFs served statically on GitHub Pages
 │       ├── dist/client/browser/        # Compiled static production bundle (deployed to GitHub Pages)
 │       │   ├── index.html              # Main application entry point
 │       │   ├── 404.html                # GitHub Pages SPA routing fallback (redirects to app router)
@@ -136,6 +141,26 @@ ai-document-workflow/
         ├── WorkflowSecurityTests.cs    # Segregation of Duties & tamper detection unit tests
         └── AiDocumentWorkflow.Tests.csproj
 ```
+
+---
+
+## 📥 Download Sample Test Documents (PDFs)
+
+To test the end-to-end autonomous ingestion, OCR rule evaluation, and segregation of duties without needing your own files, download any of these 3 standard sample PDFs directly from GitHub or test them live in the app:
+
+| Sample Document | Type | Amount | AI Evaluation Expectation | GitHub Direct Download Link | Live Hosted Link (GitHub Pages) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Sample 1: Clean Invoice** | `Invoice` | **$5,564.00** | ✅ **Clean Pass** (`Confidence: 99%`)<br>Eligible for immediate Manager review | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_1_Invoice_Clean.pdf) | [📄 View in Browser](https://zillerdx.github.io/ai-document-workflow/samples/Sample_1_Invoice_Clean.pdf) |
+| **Sample 2: Tax Anomaly Invoice** | `Invoice` | **$11,500.00** | ⚠️ **Tax Anomaly Flagged** (`Confidence: 82%`)<br>Intentional mismatch ($500 VAT vs $700 calculated) requires human review | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_2_Invoice_Tax_Anomaly.pdf) | [📄 View in Browser](https://zillerdx.github.io/ai-document-workflow/samples/Sample_2_Invoice_Tax_Anomaly.pdf) |
+| **Sample 3: GPU Cluster Quotation** | `Quotation` | **$8,346.00** | ℹ️ **Valid Quotation** (`Confidence: 96%`)<br>Hardware procurement quote ready for departmental sign-off | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_3_Quotation_GPU_Cluster.pdf) | [📄 View in Browser](https://zillerdx.github.io/ai-document-workflow/samples/Sample_3_Quotation_GPU_Cluster.pdf) |
+
+> [!TIP]
+> **Quick Testing Flow**:
+> 1. Download `Sample_2_Invoice_Tax_Anomaly.pdf`.
+> 2. Open the [Live Web App](https://zillerdx.github.io/ai-document-workflow/).
+> 3. As **Elena Vance (Staff)**, click **"Upload Document"** and upload the downloaded PDF file.
+> 4. Notice the AI automatically flags the tax calculation mismatch in the table and modal!
+> 5. Click the document row or **"View Details"** to inspect extracted items, and click **"Open Original File"** to view the PDF directly.
 
 ---
 

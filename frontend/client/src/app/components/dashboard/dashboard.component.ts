@@ -450,11 +450,11 @@ export interface RowRoleAuthority {
           <table class="documents-table">
             <thead>
               <tr>
-                <th style="width: 20%;">Document Reference</th>
-                <th style="width: 17%;">Counterparty</th>
-                <th style="width: 12%;">Dates</th>
-                <th style="width: 12%;" class="text-right">Total Amount</th>
-                <th style="width: 11%;">AI Verification</th>
+                <th style="width: 18%;">Document Reference</th>
+                <th style="width: 18%;">Counterparty</th>
+                <th style="width: 11%;">Issue Date</th>
+                <th style="width: 13%;" class="text-right">Total Amount</th>
+                <th style="width: 12%;">AI Status</th>
                 <th style="width: 10%;">Approval Flow</th>
                 <th style="width: 18%;" class="text-right">My Role Duty & Action</th>
               </tr>
@@ -463,12 +463,12 @@ export interface RowRoleAuthority {
               @if (isLoading) {
                 @for (i of [1, 2, 3, 4]; track i) {
                   <tr class="skeleton-row">
-                    <td><div class="skeleton-shimmer h-12 w-48"></div></td>
-                    <td><div class="skeleton-shimmer h-10 w-36"></div></td>
+                    <td><div class="skeleton-shimmer h-8 w-40"></div></td>
+                    <td><div class="skeleton-shimmer h-8 w-36"></div></td>
                     <td><div class="skeleton-shimmer h-8 w-24"></div></td>
                     <td><div class="skeleton-shimmer h-8 w-24 ml-auto"></div></td>
                     <td><div class="skeleton-shimmer h-8 w-28"></div></td>
-                    <td><div class="skeleton-shimmer h-8 w-36"></div></td>
+                    <td><div class="skeleton-shimmer h-8 w-28"></div></td>
                     <td><div class="skeleton-shimmer h-8 w-32 ml-auto"></div></td>
                   </tr>
                 }
@@ -514,90 +514,63 @@ export interface RowRoleAuthority {
                     class="document-row" 
                     [class.row-action-priority]="getRoleAuthority(doc).isActionRequired"
                     [class.has-anomaly]="doc.aiAnomalyDetected"
-                    [attr.data-acting-role]="currentPersona().role">
+                    [attr.data-acting-role]="currentPersona().role"
+                    (click)="openDetailModal(doc)"
+                    title="Click row to view full itemized breakdown & details">
                     <!-- 1. Document Reference -->
                     <td>
-                      <div class="doc-identifier">
-                        <div class="doc-ref-row">
-                          <span class="doc-ref-chip">{{ doc.documentNumber }}</span>
-                          <span class="doc-type-pill" [attr.data-type]="doc.documentType">
-                            {{ doc.documentType }}
-                          </span>
-                        </div>
-                        <div class="doc-filename-row" [title]="doc.originalFileName">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span class="doc-filename truncate">{{ doc.originalFileName }}</span>
-                        </div>
+                      <div class="doc-identifier-compact">
+                        <span class="doc-ref-chip">{{ doc.documentNumber }}</span>
+                        <span class="doc-type-pill" [attr.data-type]="doc.documentType">
+                          {{ doc.documentType }}
+                        </span>
                       </div>
                     </td>
 
                     <!-- 2. Counterparty -->
                     <td>
-                      <div class="vendor-cell">
-                        <div class="vendor-name truncate" [title]="doc.vendorName">{{ doc.vendorName }}</div>
-                        <div class="customer-name truncate">Billed to: {{ doc.customerName }}</div>
-                      </div>
+                      <div class="vendor-name-compact truncate" [title]="doc.vendorName">{{ doc.vendorName }}</div>
                     </td>
 
                     <!-- 3. Dates -->
                     <td>
-                      <div class="date-cell tabular-nums">
-                        <div class="date-line">
-                          <span class="date-label">Issued:</span>
-                          <span class="date-val">{{ doc.issueDate ? (doc.issueDate | date:'yyyy-MM-dd') : 'N/A' }}</span>
-                        </div>
-                        <div class="date-line due-line">
-                          <span class="date-label">Due:</span>
-                          <span class="date-val">{{ doc.dueDate ? (doc.dueDate | date:'yyyy-MM-dd') : 'N/A' }}</span>
-                        </div>
-                      </div>
+                      <div class="date-compact tabular-nums">{{ doc.issueDate ? (doc.issueDate | date:'yyyy-MM-dd') : 'N/A' }}</div>
                     </td>
 
                     <!-- 4. Total Amount -->
                     <td class="text-right">
-                      <div class="amount-cell tabular-nums">
-                        <div class="amount-primary">
-                          <span class="currency-code">{{ doc.currency }}</span>
-                          <span class="amount-val">{{ doc.totalAmount | number:'1.2-2' }}</span>
-                        </div>
-                        <div class="tax-micro-note">
-                          Tax: {{ doc.currency }} {{ doc.taxAmount | number:'1.2-2' }} ({{ doc.taxRate }}%)
-                        </div>
+                      <div class="amount-compact tabular-nums">
+                        <span class="currency-code">{{ doc.currency }}</span>
+                        <span class="amount-val">{{ doc.totalAmount | number:'1.2-2' }}</span>
                       </div>
                     </td>
 
                     <!-- 5. AI Verification -->
                     <td>
-                      <div class="ai-status-cell">
+                      <div class="ai-status-compact">
                         @if (doc.aiAnomalyDetected) {
-                          <div class="anomaly-tag" [title]="doc.aiAnomalyNotes">
+                          <span class="anomaly-tag-compact" [title]="doc.aiAnomalyNotes">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                               <line x1="12" y1="9" x2="12" y2="13"></line>
                               <line x1="12" y1="17" x2="12.01" y2="17"></line>
                             </svg>
-                            Tax Discrepancy
-                          </div>
+                            Tax Anomaly
+                          </span>
                         } @else {
-                          <div class="clean-tag">
+                          <span class="clean-tag-compact">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                               <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
                             Verified Clean
-                          </div>
+                          </span>
                         }
-                        <div class="confidence-bar-wrapper" title="Gemini Confidence: {{ (doc.aiConfidenceScore * 100) | number:'1.0-0' }}%">
-                          <div class="confidence-bar" [style.width.%]="doc.aiConfidenceScore * 100"></div>
-                        </div>
                       </div>
                     </td>
 
                     <!-- 6. Visual Stepper Workflow Stage -->
                     <td>
-                      <div class="workflow-stepper">
+                      <div class="workflow-stepper-compact">
                         <!-- Step 1: Manager -->
                         <div 
                           class="stepper-step" 
@@ -616,7 +589,7 @@ export interface RowRoleAuthority {
                               <span>1</span>
                             }
                           </div>
-                          <span class="step-label">Manager</span>
+                          <span class="step-label">L1</span>
                         </div>
 
                         <!-- Connector Bar -->
@@ -637,7 +610,7 @@ export interface RowRoleAuthority {
                               <span>2</span>
                             }
                           </div>
-                          <span class="step-label">Finance</span>
+                          <span class="step-label">L2</span>
                         </div>
                       </div>
                     </td>
@@ -1193,14 +1166,20 @@ export interface RowRoleAuthority {
     }
 
     .documents-table td {
-      padding: 1rem 1.25rem;
+      padding: 0.65rem 1.25rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       vertical-align: middle;
+      white-space: nowrap;
+      height: 52px;
       transition: background-color 150ms ease;
     }
 
+    .document-row {
+      cursor: pointer;
+    }
+
     .document-row:hover td {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.035);
     }
 
     /* Row Priority Accent when Active Role has Action Duty */
@@ -1224,23 +1203,17 @@ export interface RowRoleAuthority {
       background: rgba(239, 68, 68, 0.02);
     }
 
-    /* 1. Document Reference Cell */
-    .doc-identifier {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-
-    .doc-ref-row {
-      display: flex;
+    /* 1. Document Reference Cell - Compact */
+    .doc-identifier-compact {
+      display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
     }
 
     .doc-ref-chip {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 600;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.08);
       padding: 0.15rem 0.45rem;
@@ -1271,97 +1244,44 @@ export interface RowRoleAuthority {
       border-color: rgba(245, 158, 11, 0.25);
     }
 
-    .doc-filename-row {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      color: var(--text-muted);
-      font-size: 0.6875rem;
-    }
-
-    .doc-filename {
-      max-width: 180px;
-    }
-
-    /* 2. Counterparty Cell */
-    .vendor-cell {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
+    /* 2. Counterparty Cell - Single Line */
+    .vendor-name-compact {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.8125rem;
       max-width: 200px;
     }
 
-    .vendor-name {
-      font-weight: 600;
-      color: var(--text-primary);
-      font-size: 0.875rem;
-    }
-
-    .customer-name {
-      font-size: 0.6875rem;
-      color: var(--text-muted);
-    }
-
-    /* 3. Dates Cell */
-    .date-cell {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
+    /* 3. Dates Cell - Single Line */
+    .date-compact {
+      color: var(--text-secondary);
       font-size: 0.75rem;
     }
 
-    .date-line {
-      display: flex;
+    /* 4. Total Amount Cell - Single Line */
+    .amount-compact {
+      display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      color: var(--text-secondary);
-    }
-
-    .date-label {
-      color: var(--text-muted);
-      font-size: 0.6875rem;
-      width: 42px;
-    }
-
-    .date-val {
-      font-weight: 500;
-    }
-
-    /* 4. Total Amount Cell */
-    .amount-cell {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.2rem;
-    }
-
-    .amount-primary {
-      font-size: 0.9375rem;
+      justify-content: flex-end;
+      gap: 0.25rem;
+      font-size: 0.875rem;
       font-weight: 700;
       color: var(--text-primary);
     }
 
     .currency-code {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       color: var(--text-muted);
-      margin-right: 0.25rem;
       font-weight: 600;
     }
 
-    .tax-micro-note {
-      font-size: 0.6875rem;
-      color: var(--text-muted);
+    /* 5. AI Status Cell - Compact */
+    .ai-status-compact {
+      display: inline-flex;
+      align-items: center;
     }
 
-    /* 5. AI Status Cell */
-    .ai-status-cell {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      min-width: 120px;
-    }
-
-    .clean-tag {
+    .clean-tag-compact {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
@@ -1374,7 +1294,7 @@ export interface RowRoleAuthority {
       border-radius: var(--radius-sm);
     }
 
-    .anomaly-tag {
+    .anomaly-tag-compact {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
@@ -1387,43 +1307,29 @@ export interface RowRoleAuthority {
       border-radius: var(--radius-sm);
     }
 
-    .confidence-bar-wrapper {
-      height: 3px;
-      width: 100%;
-      background: var(--bg-card);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .confidence-bar {
-      height: 100%;
-      background: var(--accent-primary);
-      border-radius: 2px;
-    }
-
-    /* 6. Visual Stepper Workflow Stage */
-    .workflow-stepper {
-      display: flex;
+    /* 6. Visual Stepper Workflow Stage - Compact */
+    .workflow-stepper-compact {
+      display: inline-flex;
       align-items: center;
       gap: 0.35rem;
     }
 
     .stepper-step {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.25rem;
     }
 
     .step-indicator {
-      width: 18px;
-      height: 18px;
+      width: 17px;
+      height: 17px;
       border-radius: 50%;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       color: var(--text-muted);
-      font-size: 0.625rem;
+      font-size: 0.5625rem;
       font-weight: 700;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
     }
@@ -1437,7 +1343,7 @@ export interface RowRoleAuthority {
     .stepper-step.step-active .step-indicator {
       border-color: #f59e0b;
       color: #f59e0b;
-      box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 5px rgba(245, 158, 11, 0.35);
     }
 
     .stepper-step.step-active .step-label {
@@ -1701,6 +1607,51 @@ export interface RowRoleAuthority {
     .btn-sm {
       padding: 0.4rem 0.8rem;
       font-size: 0.75rem;
+    }
+
+    /* Responsive Media Queries */
+    @media (max-width: 1024px) {
+      .documents-table {
+        min-width: 820px;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-page {
+        padding: 1rem 0.75rem 2rem;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .smart-tabs-bar {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+      }
+      .tabs-group {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+      .quick-preset-actions {
+        display: none;
+      }
+      .toolbar-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box {
+        max-width: 100%;
+      }
+      .filter-controls {
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .filter-item {
+        flex: 1;
+        min-width: 130px;
+      }
     }
   `]
 })
