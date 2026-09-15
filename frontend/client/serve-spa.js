@@ -18,6 +18,9 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let reqPath = req.url.split('?')[0];
+  if (reqPath.startsWith('/ai-document-workflow')) {
+    reqPath = reqPath.replace(/^\/ai-document-workflow/, '') || '/';
+  }
   let filePath = path.join(DIST, reqPath === '/' ? 'index.html' : reqPath);
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
