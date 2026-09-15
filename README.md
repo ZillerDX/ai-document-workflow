@@ -35,7 +35,7 @@ In high-compliance financial and enterprise environments, preventing unauthorize
 
 ```mermaid
 flowchart TD
-    subgraph S1["1. Ingestion (Staff)"]
+    subgraph S1["1. Ingestion (Staff: Elena Vance)"]
         A[Staff: Ingest Invoice / Receipt] -->|Upload File or Use Preset| B[Raw Document Ingested]
     end
 
@@ -46,22 +46,22 @@ flowchart TD
         D -->|Anomaly / Tax Mismatch| F[Status: Flagged / Requires Review]
     end
 
-    subgraph S3["3. Level 1 Operational Approval (Manager)"]
-        E --> G[Manager: Marcus Vance]
+    subgraph S3["3. Level 1 Operational Approval (Manager: Sarah Connor)"]
+        E --> G[Manager: Sarah Connor]
         F --> G
         G -->|Approve| H[Status: Manager Approved]
         G -->|Reject / Request Revision| I[Returned to Staff: Revision Required]
         I --> A
     end
 
-    subgraph S4["4. Level 2 Financial Disbursement (Finance)"]
-        H --> J[Finance: Sarah Lin]
+    subgraph S4["4. Level 2 Financial Disbursement (Finance: David Sterling)"]
+        H --> J[Finance: David Sterling]
         J -->|Verify Bank & Tax ID -> Authorize Payment| K[Status: Approved & Paid]
         J -->|Detect Tax Mismatch / Fraud| L[Status: Rejected / Escalated]
     end
 
-    subgraph S5["5. Cryptographic Compliance Audit (Auditor)"]
-        K --> M[Auditor: Robert Sterling]
+    subgraph S5["5. Cryptographic Compliance Audit (Auditor: Morgan Hayes)"]
+        K --> M[Auditor: Morgan Hayes]
         L --> M
         M --> N[SHA-256 Blockchain Integrity Check]
         N -->|Cryptographically Intact| O[Audit Certified: Sealed]
@@ -81,10 +81,10 @@ flowchart TD
 
 | Role | Persona | Permissions & Scope | Primary Actions |
 | :--- | :--- | :--- | :--- |
-| **Staff (Initiator)** | **Elena Vance**<br>`Procurement & Operations` | **First in sequence.** Can only view documents created by self and documents returned for revision. | • Upload Documents (PDF/PNG)<br>• Ingest Vendor Presets (Amazon Web Services, Office Depot, Snowflake)<br>• Correct & Resubmit revisions |
-| **Manager (L1)** | **Marcus Vance**<br>`Operations Manager` | Sees documents awaiting Level 1 approval or flagged for managerial review. Cannot pay invoices. | • Review Line-Item Justification<br>• Approve for Finance Review<br>• Reject / Request Revision with comments |
-| **Finance (L2)** | **Sarah Lin**<br>`Financial Controller` | Sees manager-approved documents and tax anomaly queues. Cannot alter operational details. | • Inspect Tax ID & Withholding Tax<br>• Verify Vendor Bank Details<br>• Authorize & Release Payment |
-| **Auditor** | **Robert Sterling**<br>`Lead Compliance Auditor` | Read-only oversight of all system documents. Authority to verify cryptographic chain integrity. | • Inspect Full Audit Trail<br>• Verify SHA-256 Chain Integrity<br>• Export Audit Summary |
+| **Staff (Initiator)** | **Elena Vance**<br>`Systems Administrator`<br>`IT Infrastructure` | **First in sequence.** Can only view documents created by self and documents returned for revision. | • Upload Documents (PDF/PNG)<br>• Ingest Vendor Presets (Acme Cloud, Nexus AI, etc.)<br>• Correct & Resubmit revisions |
+| **Manager (L1)** | **Sarah Connor**<br>`Operations Director`<br>`Infrastructure & Operations` | Sees documents awaiting Level 1 approval or flagged for managerial review. Cannot pay invoices. | • Review Line-Item Justification<br>• Approve for Finance Review<br>• Reject / Request Revision with comments |
+| **Finance (L2)** | **David Sterling**<br>`Chief Financial Officer`<br>`Corporate Finance` | Sees manager-approved documents and tax anomaly queues. Cannot alter operational details. | • Inspect Tax ID & Withholding Tax<br>• Verify Vendor Bank Details<br>• Authorize & Release Payment |
+| **Auditor** | **Morgan Hayes**<br>`Senior Compliance Auditor`<br>`Internal Audit & Governance` | Read-only oversight of all system documents. Authority to verify cryptographic chain integrity. | • Inspect Full Audit Trail<br>• Verify SHA-256 Chain Integrity<br>• Export Audit Summary |
 
 ---
 
@@ -147,7 +147,7 @@ Simply open the GitHub Pages deployment:
 
 - The app starts empty with **Zero Mock Data**.
 - Elena Vance (Staff) is selected by default.
-- Click **"Upload / Preset Document"** to load production invoices (e.g. AWS Cloud Infrastructure, Office Depot, or custom PDF/PNG uploads).
+- Click **"Upload Document"** to load production invoices (e.g. Acme Cloud Services, Nexus AI, or custom PDF/PNG uploads).
 - Switch personas in the top-right header to simulate the multi-tier approval process.
 - All documents, revisions, and cryptographic audit chains persist in your browser's `localStorage`.
 
