@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DocumentService } from '../../services/document.service';
@@ -1739,6 +1739,20 @@ export class DashboardComponent implements OnInit {
   ];
 
   selectedDocForModal: DocumentItem | null = null;
+
+  constructor() {
+    effect(() => {
+      const p = this.authService.currentPersona();
+      if (p.role === 'Manager' || p.role === 'Finance') {
+        this.activeTab = 'action';
+      } else {
+        this.activeTab = 'all';
+      }
+      this.selectedStatus = 'all';
+      this.selectedType = 'all';
+      this.applyFilters();
+    });
+  }
 
   ngOnInit() {
     this.loadData();
