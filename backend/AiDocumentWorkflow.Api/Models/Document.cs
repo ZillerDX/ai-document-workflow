@@ -73,6 +73,7 @@ namespace AiDocumentWorkflow.Api.Models
     public class AuditLog
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+        public long Sequence { get; set; }
         public Guid? DocumentId { get; set; }
         public string? DocumentNumber { get; set; }
         public string Action { get; set; } = string.Empty; // Uploaded, AiAnalyzed, FieldEdited, ApprovedLevel1, ApprovedLevel2, Rejected, RevisionRequested

@@ -271,7 +271,7 @@ namespace AiDocumentWorkflow.Tests
             await auditService.LogAsync(docId, "DOC-101", "AiAnalyzed", "sys-ai", "Gemini", "AI", "OCR completed");
             await auditService.LogAsync(docId, "DOC-101", "ApprovedLevel1", "usr-2", "Sarah", "Manager", "Approved");
 
-            var logs = await context.AuditLogs.OrderBy(a => a.Timestamp).ToListAsync();
+            var logs = await context.AuditLogs.OrderBy(a => a.Sequence).ToListAsync();
 
             // Assert
             Assert.Equal(3, logs.Count);

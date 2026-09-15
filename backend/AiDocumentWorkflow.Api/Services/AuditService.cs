@@ -37,8 +37,9 @@ namespace AiDocumentWorkflow.Api.Services
 
         public async Task LogAsync(Guid? documentId, string? docNumber, string action, string actorId, string actorName, string actorRole, string details, string? prevValue = null, string? newValue = null)
         {
-            var latestLog = await _context.AuditLogs.OrderByDescending(a => a.Timestamp).FirstOrDefaultAsync();
+            var latestLog = await _context.AuditLogs.OrderByDescending(a => a.Sequence).FirstOrDefaultAsync();
             var prevHash = latestLog?.RecordHash ?? GenesisHash;
+            var nextSeq = (latestLog?.Sequence ?? 0) + 1;
             var now = DateTime.UtcNow;
             var timestamp = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc);
 
@@ -47,6 +48,7 @@ namespace AiDocumentWorkflow.Api.Services
             var log = new AuditLog
             {
                 Id = Guid.NewGuid(),
+                Sequence = nextSeq,
                 DocumentId = documentId,
                 DocumentNumber = docNumber,
                 Action = action,
