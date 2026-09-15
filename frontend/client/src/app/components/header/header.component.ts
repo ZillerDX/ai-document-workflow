@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, inject, ElementRef, HostListener } from '@angular/core';
+import { Component, Output, EventEmitter, inject, ElementRef, HostListener, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthPersonaService } from '../../services/auth-persona.service';
 import { UiStateService } from '../../services/ui-state.service';
@@ -39,12 +39,12 @@ import { UserPersona } from '../../models/document.model';
                 {{ currentPersona().role }}
               </span>
             </div>
-            <svg class="chevron-icon" [class.rotated]="isPersonaMenuOpen" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="chevron-icon" [class.rotated]="isPersonaMenuOpen()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
 
-          @if (isPersonaMenuOpen) {
+          @if (isPersonaMenuOpen()) {
             <div class="persona-dropdown">
               <div class="dropdown-header">Switch Active Role</div>
               @for (p of authService.personas; track p.id) {
@@ -283,23 +283,23 @@ export class HeaderComponent {
   authService = inject(AuthPersonaService);
   uiState = inject(UiStateService);
   currentPersona = this.authService.currentPersona;
-  isPersonaMenuOpen = false;
+  isPersonaMenuOpen = signal(false);
 
   constructor(private elementRef: ElementRef) {}
 
   togglePersonaMenu() {
-    this.isPersonaMenuOpen = !this.isPersonaMenuOpen;
+    this.isPersonaMenuOpen.update(v => !v);
   }
 
   selectRole(role: 'Staff' | 'Manager' | 'Finance' | 'Auditor') {
     this.authService.setPersona(role);
-    this.isPersonaMenuOpen = false;
+    this.isPersonaMenuOpen.set(false);
   }
 
   @HostListener('document:click', ['$event'])
   onDocClick(event: MouseEvent) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.isPersonaMenuOpen = false;
+      this.isPersonaMenuOpen.set(false);
     }
   }
 }
