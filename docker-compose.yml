@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aegisflow-api
+    ports:
+      - "5120:5120"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Data Source=/data/workflow.db
+    volumes:
+      - workflow_data:/data
+    restart: unless-stopped
+
+volumes:
+  workflow_data:

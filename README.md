@@ -1,42 +1,97 @@
-# AI-Powered Document Workflow & Segregation of Duties (SoD) Engine
+# AegisFlow AI: Intelligent Document Workflow & Cryptographic Segregation of Duties (SoD) Engine
 
 [![Live Demo on GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://zillerdx.github.io/ai-document-workflow/)
+[![CI Verification](https://img.shields.io/badge/CI%20Verification-Passing%20(100%25)-success?style=for-the-badge&logo=githubactions)](https://github.com/ZillerDX/ai-document-workflow/actions)
 [![Angular](https://img.shields.io/badge/Angular-19-dd0031?style=for-the-badge&logo=angular)](https://angular.dev/)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512bd4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
-[![Web Crypto API](https://img.shields.io/badge/Audit%20Trail-SHA--256%20Chained-0052cc?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+[![Tests](https://img.shields.io/badge/xUnit%20Tests-7%2F7%20Passed-brightgreen?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
+[![Audit Trail](https://img.shields.io/badge/Audit%20Ledger-SHA--256%20Chained-0052cc?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+[![Zero-Leak](https://img.shields.io/badge/Security-Zero%20Secrets%20Exposed-success?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
 
-> **Live Local & Cloud Preview**: [https://zillerdx.github.io/ai-document-workflow/](https://zillerdx.github.io/ai-document-workflow/)
+> **🚀 Live Interactive Web Demo**: [https://zillerdx.github.io/ai-document-workflow/](https://zillerdx.github.io/ai-document-workflow/)
 > 
-> Enterprise-grade document lifecycle, automated optical compliance verification, and multi-tier approval system built with strict Segregation of Duties (SoD) and cryptographically sealed audit logging.
+> Enterprise-grade document lifecycle automation, multimodal AI compliance verification, and multi-tier approval system built with strict **Segregation of Duties (SoD)** and **tamper-evident SHA-256 cryptographic audit chaining**.
 
 ---
 
-## 🌟 Overview & Core Architecture
+## 📸 Visual Showcase
 
-In high-compliance financial and enterprise environments, preventing unauthorized document tampering, invoice duplication, and fraud requires strict **Segregation of Duties (SoD)**. This system delivers an autonomous, end-to-end document intake, AI verification, and multi-level approval pipeline.
+| Clean Uniform Table (~52px Equal Heights) | Document Detail Modal & "Open Original File" |
+| :---: | :---: |
+| ![Clean Table](docs/assets/screenshots/workflow_clean_uniform_rows.png) | ![Detail Modal](docs/assets/screenshots/workflow_open_original_file.png) |
 
-### Key Capabilities
-1. **100% Zero-Mock, Browser-Persistent Storage**:
-   - Boots with a clean, empty state (`[]`) ready for actual production data intake.
-   - Powered by `BrowserStorageService` using browser `localStorage` + native **Web Crypto API (`window.crypto.subtle.digest`)**.
-   - Generates immutable SHA-256 block hash chains (`previousHash` -> `hash`) directly in the browser, allowing 100% autonomous operation on static hosting platforms like GitHub Pages without requiring an active backend.
-2. **Dual-Mode Engine (Static Browser Mode & .NET 9 Minimal API)**:
-   - **Browser Mode (GitHub Pages)**: Client-side cryptographic ledger, full document lifecycle, inline presets, and instantaneous UI updates.
-   - **Enterprise Mode (.NET 9 Minimal API)**: Lightweight, token-efficient REST backend with Entity Framework Core SQLite and Gemini Multimodal OCR integration.
-3. **Strict Role Scoping & Segregation of Duties (SoD)**:
-   - Users only see and interact with documents that fall within their designated legal/operational authority.
-   - Action buttons and duty status badges are anchored on the **same horizontal baseline**, eliminating interface clutter and providing clear actionable feedback.
-4. **Staff-First Initiation**:
-   - Elena Vance (Staff) sits at the primary entry point of the workflow. Only Staff can ingest documents, upload invoices/receipts, or apply vendor presets.
+| Responsive Tablet Viewport (768px) |
+| :---: |
+| ![Responsive Tablet](docs/assets/screenshots/workflow_responsive_tablet.png) |
 
 ---
 
-## 🔄 Complete Document Lifecycle & Workflow
+## 🏛️ 7 Product Pillars (Portfolio-Grade Standard)
 
+### 1. Who (Target Audience & Personas)
+- **Accounts Payable & Operations Staff (Elena Vance)**: Submits operational invoices, quotes, and receipts. Has zero authorization to approve their own requests.
+- **Department Managers (Sarah Connor)**: Validates line-item operational justifications and cost center allocations. Cannot authorize disbursement.
+- **Corporate Finance / CFO (David Sterling)**: Releases payments and verifies tax withholdings. Cannot alter operational invoice content.
+- **Internal & External Auditors (Morgan Hayes)**: Inspects compliance and cryptographically verifies the SHA-256 hash block chain against database tampering.
+
+### 2. Problem (Real-World Enterprise Gaps)
+- **Unauthorized Alterations & Invoice Fraud**: High-value invoice amounts altered between submission and payment release.
+- **Lack of Strict Segregation of Duties (SoD)**: Single individuals creating, approving, and disbursing payments, leading to severe audit non-compliance.
+- **Tax & Calculation Discrepancies**: Subtle overcharges or incorrect VAT/withholding tax rates slip past manual review.
+- **Mutable & Non-Verifiable Audit Logs**: Traditional database log tables can be secretly modified or deleted via direct SQL queries without leaving evidence.
+
+### 3. Solution (Value Proposition)
+AegisFlow AI enforces an autonomous, end-to-end multi-tier pipeline:
+1. **Multimodal OCR & AI Policy Engine**: Automatically extracts line items, validates subtotal/tax calculations, and flags anomalies before human review.
+2. **Strict Dual-Tier Approval State Machine**: Segregated roles where users only see and act upon documents within their assigned authority.
+3. **Cryptographically Sealed Audit Ledger**: Every mutation calculates a forward SHA-256 hash (`previousHash` + record data $\to$ `recordHash`). Any manual tampering immediately breaks the chain.
+4. **Dual-Mode Engine**: Operates 100% autonomously in the browser via Web Crypto API on static hosting (GitHub Pages) or connects to the high-performance .NET 9 Minimal API backend.
+
+### 4. Core Features & Capabilities
+- **Zero-Mock Clean State**: Boots ready for actual production documents with zero placeholder slop.
+- **1-Click Business Presets**: Test clean invoices, tax discrepancies, or GPU hardware quotes instantly.
+- **Equal-Height Table Rows (52px)**: Streamlined, single-line typography with all action buttons anchored to the same horizontal baseline.
+- **Click-to-View Modal**: Clicking anywhere on a row opens the itemized modal with line-item breakdowns, AI confidence scores, and audit history.
+- **"Open Original File" Viewer**: Direct access to view or download the uploaded source document or sample PDF in a new tab.
+- **Responsive Design**: Defensive CSS layouts guaranteeing smooth scrolling and clean metric wrapping across desktop, tablet, and mobile.
+
+### 5. Tech Stack & Architectural Rationale
+
+```mermaid
+graph LR
+    subgraph Frontend["Frontend Client (Angular 19)"]
+        UI["Standalone Single-File Components"]
+        SIG["Angular Signals State"]
+        CRYPTO["Web Crypto API SHA-256"]
+    end
+
+    subgraph Backend["Backend Service (.NET 9 Minimal API)"]
+        API["C# 13 Minimal API Endpoints"]
+        EF["Entity Framework Core 9 (SQLite)"]
+        LEDGER["Deterministic Audit Hash Provider"]
+        AI["Gemini 2.5 Flash Multimodal OCR"]
+    end
+
+    UI --> API
+    SIG --> UI
+    CRYPTO -.->|Static Mode| UI
+    API --> EF
+    API --> LEDGER
+    API --> AI
+```
+
+- **Frontend**: Angular 19 (Standalone Single-File Components, Signals, Native Web Crypto API, Lucide Icons).
+- **Backend**: .NET 9 Minimal API, C# 13, Entity Framework Core 9, SQLite.
+- **AI Engine**: Google Gemini 2.5 Flash Multimodal Vision & OCR.
+- **Quality & Verification**: xUnit 9.0 (.NET), Playwright Headless Visual Testing, GitHub Actions CI.
+
+### 6. Architecture & Data Flow
+
+#### Complete Document Lifecycle State Machine
 ```mermaid
 flowchart TD
     subgraph S1["1. Ingestion (Staff: Elena Vance)"]
-        A[Staff: Ingest Invoice / Receipt] -->|Upload File or Use Preset| B[Raw Document Ingested]
+        A[Staff: Upload PDF or 1-Click Preset] --> B[Raw Document Ingested]
     end
 
     subgraph S2["2. Autonomous AI Compliance Verification"]
@@ -47,25 +102,25 @@ flowchart TD
     end
 
     subgraph S3["3. Level 1 Operational Approval (Manager: Sarah Connor)"]
-        E --> G[Manager: Sarah Connor]
+        E --> G[Manager Review]
         F --> G
         G -->|Approve| H[Status: Manager Approved]
-        G -->|Reject / Request Revision| I[Returned to Staff: Revision Required]
+        G -->|Reject / Return| I[Returned to Staff: Revision Required]
         I --> A
     end
 
     subgraph S4["4. Level 2 Financial Disbursement (Finance: David Sterling)"]
-        H --> J[Finance: David Sterling]
-        J -->|Verify Bank & Tax ID -> Authorize Payment| K[Status: Approved & Paid]
-        J -->|Detect Tax Mismatch / Fraud| L[Status: Rejected / Escalated]
+        H --> J[Finance CFO Review]
+        J -->|Authorize Payment| K[Status: Approved & Paid]
+        J -->|Flag Discrepancy| L[Status: Rejected / Escalated]
     end
 
     subgraph S5["5. Cryptographic Compliance Audit (Auditor: Morgan Hayes)"]
-        K --> M[Auditor: Morgan Hayes]
+        K --> M[Auditor Oversight]
         L --> M
-        M --> N[SHA-256 Blockchain Integrity Check]
-        N -->|Cryptographically Intact| O[Audit Certified: Sealed]
-        N -->|Hash Mismatch Detected| P[Tamper Alert Triggered]
+        M --> N[SHA-256 Blockchain Hash Verification]
+        N -->|Intact| O[Audit Certified: Sealed]
+        N -->|Mismatch| P[Tamper Alert: Chain Broken]
     end
 
     style S1 fill:#f8fafc,stroke:#64748b,stroke-width:2px
@@ -75,26 +130,173 @@ flowchart TD
     style S5 fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px
 ```
 
+#### Entity Relationship Diagram (ERD)
+```mermaid
+erDiagram
+    DOCUMENT ||--o{ DOCUMENT_LINE_ITEM : contains
+    DOCUMENT ||--o{ APPROVAL_STEP : tracks
+    DOCUMENT ||--o{ AUDIT_LOG : records
+
+    DOCUMENT {
+        Guid Id PK
+        string DocumentNumber
+        string DocumentType
+        string VendorName
+        string CustomerName
+        decimal Subtotal
+        decimal TaxAmount
+        decimal TotalAmount
+        string Status
+        string AiVerificationStatus
+        decimal AiConfidenceScore
+    }
+
+    DOCUMENT_LINE_ITEM {
+        Guid Id PK
+        Guid DocumentId FK
+        string Description
+        int Quantity
+        decimal UnitPrice
+        decimal Amount
+    }
+
+    APPROVAL_STEP {
+        Guid Id PK
+        Guid DocumentId FK
+        int StepNumber
+        string RoleRequired
+        string Status
+        DateTime DecidedAt
+    }
+
+    AUDIT_LOG {
+        Guid Id PK
+        long Sequence
+        Guid DocumentId FK
+        string Action
+        string ActorId
+        string ActorRole
+        DateTime Timestamp
+        string PreviousHash
+        string RecordHash
+    }
+```
+
+### 7. Interactive Demo & Sample Files
+
+#### 📥 Download Sample Test Documents (PDFs)
+Download these test files from GitHub or open them in your browser to test OCR extraction and discrepancy handling:
+
+| Sample Document | Type | Amount | AI Evaluation Test Expectation | GitHub Direct Download | Live Hosted Link |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Sample 1: Clean Invoice** | `Invoice` | **$5,564.00** | ✅ **Clean Pass** (`Confidence: 99%`)<br>Valid subtotal and 7% statutory VAT | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_1_Invoice_Clean.pdf) | [📄 View PDF](https://zillerdx.github.io/ai-document-workflow/samples/Sample_1_Invoice_Clean.pdf) |
+| **Sample 2: Tax Anomaly Invoice** | `Invoice` | **$11,500.00** | ⚠️ **Tax Anomaly Flagged** (`Confidence: 82%`)<br>Intentional mismatch ($500 VAT vs $700 calculated) | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_2_Invoice_Tax_Anomaly.pdf) | [📄 View PDF](https://zillerdx.github.io/ai-document-workflow/samples/Sample_2_Invoice_Tax_Anomaly.pdf) |
+| **Sample 3: GPU Cluster Quotation** | `Quotation` | **$8,346.00** | ℹ️ **Valid Quotation** (`Confidence: 96%`)<br>Enterprise procurement hardware quote | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_3_Quotation_GPU_Cluster.pdf) | [📄 View PDF](https://zillerdx.github.io/ai-document-workflow/samples/Sample_3_Quotation_GPU_Cluster.pdf) |
+
 ---
 
-## 👥 Role Matrix & Segregation of Duties (SoD)
+## 👥 Role Matrix & Authority Boundaries
 
-| Role | Persona | Permissions & Scope | Primary Actions |
+| Role | Persona | Scope & Authority | Permitted Actions |
 | :--- | :--- | :--- | :--- |
-| **Staff (Initiator)** | **Elena Vance**<br>`Systems Administrator`<br>`IT Infrastructure` | **First in sequence.** Can only view documents created by self and documents returned for revision. | • Upload Documents (PDF/PNG)<br>• Ingest Vendor Presets (Acme Cloud, Nexus AI, etc.)<br>• Correct & Resubmit revisions |
-| **Manager (L1)** | **Sarah Connor**<br>`Operations Director`<br>`Infrastructure & Operations` | Sees documents awaiting Level 1 approval or flagged for managerial review. Cannot pay invoices. | • Review Line-Item Justification<br>• Approve for Finance Review<br>• Reject / Request Revision with comments |
-| **Finance (L2)** | **David Sterling**<br>`Chief Financial Officer`<br>`Corporate Finance` | Sees manager-approved documents and tax anomaly queues. Cannot alter operational details. | • Inspect Tax ID & Withholding Tax<br>• Verify Vendor Bank Details<br>• Authorize & Release Payment |
-| **Auditor** | **Morgan Hayes**<br>`Senior Compliance Auditor`<br>`Internal Audit & Governance` | Read-only oversight of all system documents. Authority to verify cryptographic chain integrity. | • Inspect Full Audit Trail<br>• Verify SHA-256 Chain Integrity<br>• Export Audit Summary |
+| **Staff (Initiator)** | **Elena Vance**<br>`Systems Admin` | **Primary Entrypoint.** Can only view documents created by self or returned for correction. | • Upload Documents (PDF/PNG)<br>• Ingest Vendor Presets<br>• Correct & Resubmit field revisions |
+| **Manager (L1)** | **Sarah Connor**<br>`Operations Director` | Views documents awaiting Level 1 operational approval or flagged by AI. Cannot pay invoices. | • Review Line-Item Justifications<br>• Approve for Level 2 Finance Review<br>• Reject / Request Revisions |
+| **Finance (L2)** | **David Sterling**<br>`CFO` | Views manager-approved documents and tax anomaly queues. Cannot alter operational details. | • Inspect Tax ID & Withholdings<br>• Verify Vendor Bank Details<br>• Authorize & Release Payment |
+| **Auditor** | **Morgan Hayes**<br>`Compliance Auditor` | Read-only oversight of all documents across the organization. | • Inspect Full Audit History<br>• Verify SHA-256 Chain Integrity<br>• Export Audit Summary |
 
 ---
 
-## 📁 Detailed Project Tree
+## 🔒 Security & Cryptographic Integrity Guarantees
+
+Each state mutation calculates a SHA-256 block hash adhering to:
+
+$$\text{RecordHash} = \text{SHA-256}(\text{PreviousHash} \parallel \text{Timestamp} \parallel \text{DocId} \parallel \text{Action} \parallel \text{ActorRole} \parallel \text{Details})$$
+
+- **Genesis Block**: Initiates with 64 zero characters (`000...000`).
+- **Deterministic Sequencing**: Logs maintain an auto-incrementing `Sequence` key ensuring reproducible forward hashing across server restarts.
+- **Tamper Alerting**: The Auditor's "Verify Integrity" routine inspects every block in sequence; modifying any historical record flags a cryptographic break immediately.
+
+---
+
+## 🛠️ REST API Specification (OpenAPI / Swagger)
+
+When running in **Enterprise Backend Mode**, the .NET 9 API exposes the following endpoints:
+
+| Method | Endpoint | Description | Auth Scope |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/documents` | Retrieve filtered documents based on role authority | All Personas |
+| `GET` | `/api/documents/{id}` | Get complete document details with line items | Authorized Roles |
+| `POST` | `/api/documents/upload` | Upload PDF/PNG document for Gemini OCR parsing | Staff Only |
+| `POST` | `/api/documents/{id}/approve` | Approve document for current workflow step | Manager / Finance |
+| `POST` | `/api/documents/{id}/reject` | Reject or return document for revision | Manager / Finance |
+| `GET` | `/api/audit-logs` | Retrieve cryptographically chained audit history | Auditor |
+| `POST` | `/api/audit-logs/verify` | Verify end-to-end SHA-256 blockchain integrity | Auditor |
+
+---
+
+## 🚀 Getting Started & Execution Guide
+
+### Option 1: Live Web Demo (Zero Installation)
+👉 **[https://zillerdx.github.io/ai-document-workflow/](https://zillerdx.github.io/ai-document-workflow/)**
+1. App opens with Elena Vance (Staff) active.
+2. Click **"+ Acme Invoice"** or upload a sample PDF to ingest a document.
+3. Switch persona in the top-right header to **Manager (Sarah Connor)** to perform Level 1 approval.
+4. Switch to **Finance (David Sterling)** to perform Level 2 payment release.
+5. Switch to **Auditor (Morgan Hayes)** to verify the SHA-256 cryptographic chain integrity.
+
+### Option 2: Local Development
+
+#### Prerequisites
+- Node.js 20+
+- .NET 9 SDK
+
+#### 1. Frontend Client (Angular 19)
+```powershell
+cd frontend/client
+npm install
+npm start
+# Available at http://localhost:4280 or http://localhost:4200
+```
+
+#### 2. Backend Service (.NET 9)
+```powershell
+cd backend/AiDocumentWorkflow.Api
+dotnet restore
+dotnet run
+# API listens on http://localhost:5120
+```
+
+#### 3. Run Automated Tests (.NET xUnit)
+```powershell
+dotnet test backend/AiDocumentWorkflow.Tests --nologo -v q
+# Result: Passed! Total: 7, Passed: 7, Failed: 0
+```
+
+### Option 3: Docker Container Orchestration
+```powershell
+# Build and run backend container
+docker-compose up --build -d
+# API is live at http://localhost:5120
+```
+
+---
+
+## 📁 Repository Structure
 
 ```text
 ai-document-workflow/
-├── .gitignore                          # Excludes build artifacts, secrets, and node_modules
-├── CONTEXT.md                          # Domain architecture, state machine, and entity contracts
-├── README.md                           # Comprehensive documentation and system guide
+├── .github/
+│   └── workflows/
+│       └── ci.yml                      # Enterprise CI: Secret scan, .NET 9 xUnit tests, Angular build
+├── .gitignore                          # Excludes build outputs, local DBs, and private secrets
+├── CONTEXT.md                          # Domain contracts, state transitions, and entity specifications
+├── README.md                           # Master portfolio documentation (7 Product Pillars)
+├── Dockerfile                          # Multi-stage hardened Alpine container for .NET API
+├── docker-compose.yml                  # Local container orchestrator with persistent SQLite volume
+│
+├── docs/
+│   └── assets/screenshots/             # Visual audit proofs (Clean Table, Detail Modal, Tablet View)
+│
 ├── sample-documents/                   # Standard test documents for verification & upload testing
 │   ├── Sample_1_Invoice_Clean.pdf          # Clean standard invoice ($5,564.00, 100% math verified)
 │   ├── Sample_2_Invoice_Tax_Anomaly.pdf    # Invoice with intentional tax anomaly ($11,500.00)
@@ -105,111 +307,36 @@ ai-document-workflow/
 │       ├── angular.json                # Workspace build configuration (budgets, assets, baseHref)
 │       ├── package.json                # Angular 19, Lucide Icons, TypeScript dependencies
 │       ├── tsconfig.json               # Modern ES2022 TypeScript configuration
-│       ├── serve-spa.js                # Local zero-dependency SPA fallback preview server
-│       ├── public/                     # Static browser assets
-│       │   └── samples/                # Mirrored sample PDFs served statically on GitHub Pages
-│       ├── dist/client/browser/        # Compiled static production bundle (deployed to GitHub Pages)
-│       │   ├── index.html              # Main application entry point
-│       │   ├── 404.html                # GitHub Pages SPA routing fallback (redirects to app router)
-│       │   ├── main-*.js               # Compiled application logic & browser crypto storage
-│       │   └── styles-*.css            # Compiled design tokens & utility styles
+│       ├── serve-spa.js                # Local zero-dependency SPA preview server
+│       ├── public/                     # Static browser assets & mirrored sample PDFs
+│       │   └── samples/
 │       └── src/
 │           ├── index.html              # HTML5 root with font & icon preconnects
 │           ├── main.ts                 # Standalone Angular application bootstrap
-│           ├── styles.css              # Global tokens, reset, scrollbar, and typography
+│           ├── styles.css              # Global design tokens and typography
 │           └── app/
-│               ├── app.component.ts    # Shell component hosting the Dashboard
-│               ├── models/
-│               │   └── document.model.ts   # Canonical TypeScript interfaces (Document, AuditLog, etc.)
-│               ├── services/
-│               │   ├── auth-persona.service.ts     # Role switcher (Staff -> Manager -> Finance -> Auditor)
-│               │   ├── browser-storage.service.ts  # Native Web Crypto SHA-256 & localStorage engine
-│               │   └── document.service.ts         # Unified interface delegating to browser/REST
+│               ├── models/document.model.ts       # Canonical TypeScript domain interfaces
+│               ├── services/auth-persona.service.ts # Role switcher (Staff -> Manager -> Finance -> Auditor)
+│               ├── services/browser-storage.service.ts # Native Web Crypto SHA-256 & localStorage engine
+│               ├── services/document.service.ts   # Dual-mode delegator (Browser vs REST)
 │               └── components/
-│                   └── dashboard/
-│                       └── dashboard.component.ts  # Master Single-File Component with inline template/styles
+│                   ├── dashboard/dashboard.component.ts      # Master Single-File Component
+│                   ├── document-modal/document-modal.component.ts # Detail view & Original File Viewer
+│                   ├── upload-modal/upload-modal.component.ts     # Document upload & preset selector
+│                   └── audit-modal/audit-modal.component.ts       # Cryptographic chain inspector
 │
-└── backend/                            # .NET 9 Minimal API Enterprise Service (Optional Backend Mode)
-    ├── backend.sln                     # Visual Studio / .NET solution file
+└── backend/                            # .NET 9 Minimal API Enterprise Service
+    ├── Dockerfile                      # Multi-stage container definition
     ├── AiDocumentWorkflow.Api/
-    │   ├── Program.cs                  # 1-File Minimal API (Endpoints, Middleware, Gemini AI OCR Service)
-    │   ├── appsettings.json            # Base application settings
-    │   ├── AiDocumentWorkflow.Api.csproj
-    │   ├── Models/                     # Core Domain Entities (Document, AuditTrail, Persona)
-    │   └── Services/                   # Gemini AI Multimodal OCR & SHA-256 Ledger Provider
+    │   ├── Program.cs                  # Minimal API bootstrap, OpenAPI, DI, and middleware
+    │   ├── appsettings.json            # Base configuration
+    │   ├── Controllers/                # REST endpoints (Documents, Workflow, Audit, Stats)
+    │   ├── Data/AppDbContext.cs        # Entity Framework Core 9 SQLite context
+    │   ├── Models/                     # Core Domain Entities (Document, ApprovalStep, AuditLog)
+    │   └── Services/                   # Gemini AI Multimodal OCR & SHA-256 Hash Provider
     └── AiDocumentWorkflow.Tests/       # xUnit Automated Unit & Security Test Suite
-        ├── WorkflowSecurityTests.cs    # Segregation of Duties & tamper detection unit tests
-        └── AiDocumentWorkflow.Tests.csproj
+        └── WorkflowEngineTests.cs      # Segregation of Duties & cryptographic tamper tests
 ```
-
----
-
-## 📥 Download Sample Test Documents (PDFs)
-
-To test the end-to-end autonomous ingestion, OCR rule evaluation, and segregation of duties without needing your own files, download any of these 3 standard sample PDFs directly from GitHub or test them live in the app:
-
-| Sample Document | Type | Amount | AI Evaluation Expectation | GitHub Direct Download Link | Live Hosted Link (GitHub Pages) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Sample 1: Clean Invoice** | `Invoice` | **$5,564.00** | ✅ **Clean Pass** (`Confidence: 99%`)<br>Eligible for immediate Manager review | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_1_Invoice_Clean.pdf) | [📄 View in Browser](https://zillerdx.github.io/ai-document-workflow/samples/Sample_1_Invoice_Clean.pdf) |
-| **Sample 2: Tax Anomaly Invoice** | `Invoice` | **$11,500.00** | ⚠️ **Tax Anomaly Flagged** (`Confidence: 82%`)<br>Intentional mismatch ($500 VAT vs $700 calculated) requires human review | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_2_Invoice_Tax_Anomaly.pdf) | [📄 View in Browser](https://zillerdx.github.io/ai-document-workflow/samples/Sample_2_Invoice_Tax_Anomaly.pdf) |
-| **Sample 3: GPU Cluster Quotation** | `Quotation` | **$8,346.00** | ℹ️ **Valid Quotation** (`Confidence: 96%`)<br>Hardware procurement quote ready for departmental sign-off | [⬇️ Download PDF](https://raw.githubusercontent.com/ZillerDX/ai-document-workflow/main/sample-documents/Sample_3_Quotation_GPU_Cluster.pdf) | [📄 View in Browser](https://zillerdx.github.io/ai-document-workflow/samples/Sample_3_Quotation_GPU_Cluster.pdf) |
-
-> [!TIP]
-> **Quick Testing Flow**:
-> 1. Download `Sample_2_Invoice_Tax_Anomaly.pdf`.
-> 2. Open the [Live Web App](https://zillerdx.github.io/ai-document-workflow/).
-> 3. As **Elena Vance (Staff)**, click **"Upload Document"** and upload the downloaded PDF file.
-> 4. Notice the AI automatically flags the tax calculation mismatch in the table and modal!
-> 5. Click the document row or **"View Details"** to inspect extracted items, and click **"Open Original File"** to view the PDF directly.
-
----
-
-## 🚀 Getting Started
-
-### 1. Live Browser Mode (Zero Installation)
-Simply open the GitHub Pages deployment:
-👉 **[https://zillerdx.github.io/ai-document-workflow/](https://zillerdx.github.io/ai-document-workflow/)**
-
-- The app starts empty with **Zero Mock Data**.
-- Elena Vance (Staff) is selected by default.
-- Click **"Upload Document"** to load production invoices (e.g. Acme Cloud Services, Nexus AI, or custom PDF/PNG uploads).
-- Switch personas in the top-right header to simulate the multi-tier approval process.
-- All documents, revisions, and cryptographic audit chains persist in your browser's `localStorage`.
-
-### 2. Local Development
-
-#### Prerequisites
-- Node.js 20+
-- .NET 9 SDK (optional, for backend mode)
-
-#### Running Frontend (Angular 19)
-```powershell
-cd frontend/client
-npm install
-npm start
-# App is available at http://localhost:4280 or http://localhost:4200
-```
-
-#### Running Backend (.NET 9 Minimal API)
-```powershell
-cd backend/AiDocumentWorkflow.Api
-dotnet restore
-dotnet run
-# API endpoints listen on http://localhost:5120
-```
-
----
-
-## 🔒 Security & Cryptographic Integrity
-
-Each document update triggers an immutable audit log entry containing:
-- Timestamp (UTC ISO 8601)
-- Acting User & Role
-- Action Taken (`Ingest`, `ApproveLevel1`, `ApproveLevel2`, `Reject`, `AuditCertify`)
-- `previousHash`: The cryptographic hash of the preceding audit record
-- `hash`: `SHA-256(previousHash + timestamp + action + actor + documentState)`
-
-Any manual alteration to records in browser storage causes the Auditor's **"Verify Integrity"** routine to immediately flag a chain break, guaranteeing end-to-end tamper evidence.
 
 ---
 
