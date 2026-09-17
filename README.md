@@ -14,15 +14,35 @@
 
 ---
 
-## 📸 Visual Showcase
+## 📸 Visual Showcase & Architectural Highlights
 
-| Clean Uniform Table (~52px Equal Heights) | Document Detail Modal & "Open Original File" |
-| :---: | :---: |
-| ![Clean Table](docs/assets/screenshots/workflow_clean_uniform_rows.png) | ![Detail Modal](docs/assets/screenshots/workflow_open_original_file.png) |
+### 1. Executive Operations Dashboard & Clean Uniform Table (~52px)
+High-density financial operations dashboard with real-time KPI metrics, role authority headers, smart queue tabs, and single-line 52px table rows.
+![Hero Executive Dashboard](docs/assets/screenshots/hero_dashboard_enterprise.png)
 
-| Responsive Tablet Viewport (768px) |
-| :---: |
-| ![Responsive Tablet](docs/assets/screenshots/workflow_responsive_tablet.png) |
+---
+
+### 2. Deep Multimodal AI Audit & "Open Original File" Modal
+Itemized invoice breakdown, Gemini multimodal OCR extraction, tax calculation mismatch anomaly alert (15% billed vs 7% statutory), and direct access to open the original source PDF.
+![Document Detail Modal with AI Anomaly](docs/assets/screenshots/document_detail_tax_anomaly.png)
+
+---
+
+### 3. Strict Segregation of Duties (SoD) — Manager L1 Review View
+When switched to Manager (Sarah Connor), the interface dynamically adapts with role boundaries, pending spend metrics ($25,410.00), and contextual `Action Required` / `Review L1` approval triggers.
+![Segregation of Duties Manager View](docs/assets/screenshots/segregation_of_duties_manager.png)
+
+---
+
+### 4. Cryptographic Audit & Compliance Ledger (SHA-256 Hash Chain)
+End-to-end forward-chained block ledger (`previousHash` $\to$ `recordHash`). Click "Verify Cryptographic Chain" to confirm 100% tamper-free integrity from genesis to head.
+![Cryptographic Audit Ledger](docs/assets/screenshots/cryptographic_audit_ledger.png)
+
+---
+
+### 5. Defensive Responsive Design (Tablet Viewport 768px)
+Fluid auto-wrapping KPI cards, clean typography, and horizontal scroll containment on compact displays.
+![Responsive Tablet](docs/assets/screenshots/workflow_responsive_tablet.png)
 
 ---
 
@@ -295,7 +315,7 @@ ai-document-workflow/
 ├── docker-compose.yml                  # Local container orchestrator with persistent SQLite volume
 │
 ├── docs/
-│   └── assets/screenshots/             # Visual audit proofs (Clean Table, Detail Modal, Tablet View)
+│   └── assets/screenshots/             # High-DPI Visual Proofs (Hero Dashboard, Detail Modal, SoD View, Audit Ledger, Tablet)
 │
 ├── sample-documents/                   # Standard test documents for verification & upload testing
 │   ├── Sample_1_Invoice_Clean.pdf          # Clean standard invoice ($5,564.00, 100% math verified)
