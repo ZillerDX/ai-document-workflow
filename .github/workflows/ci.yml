@@ -35,17 +35,17 @@ jobs:
           echo "Zero-leak secret scan passed clean."
 
   backend-dotnet:
-    name: .NET 9 Engine & xUnit Suite
+    name: .NET 10 LTS Engine & xUnit Suite
     runs-on: ubuntu-latest
     needs: security-audit
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
 
-      - name: Setup .NET 9 SDK
+      - name: Setup .NET 10 LTS SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore Backend Dependencies
         run: dotnet restore backend/AiDocumentWorkflow.Api/AiDocumentWorkflow.Api.csproj

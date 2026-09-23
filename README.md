@@ -3,7 +3,7 @@
 [![Live Demo on GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://zillerdx.github.io/ai-document-workflow/)
 [![CI Verification](https://img.shields.io/badge/CI%20Verification-Passing%20(100%25)-success?style=for-the-badge&logo=githubactions)](https://github.com/ZillerDX/ai-document-workflow/actions)
 [![Angular](https://img.shields.io/badge/Angular-19-dd0031?style=for-the-badge&logo=angular)](https://angular.dev/)
-[![.NET](https://img.shields.io/badge/.NET-9.0-512bd4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-10.0%20LTS-512bd4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
 [![Tests](https://img.shields.io/badge/xUnit%20Tests-7%2F7%20Passed-brightgreen?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
 [![Audit Trail](https://img.shields.io/badge/Audit%20Ledger-SHA--256%20Chained-0052cc?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 [![Zero-Leak](https://img.shields.io/badge/Security-Zero%20Secrets%20Exposed-success?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
@@ -65,7 +65,7 @@ AegisFlow AI enforces an autonomous, end-to-end multi-tier pipeline:
 1. **Multimodal OCR & AI Policy Engine**: Automatically extracts line items, validates subtotal/tax calculations, and flags anomalies before human review.
 2. **Strict Dual-Tier Approval State Machine**: Segregated roles where users only see and act upon documents within their assigned authority.
 3. **Cryptographically Sealed Audit Ledger**: Every mutation calculates a forward SHA-256 hash (`previousHash` + record data $\to$ `recordHash`). Any manual tampering immediately breaks the chain.
-4. **Dual-Mode Engine**: Operates 100% autonomously in the browser via Web Crypto API on static hosting (GitHub Pages) or connects to the high-performance .NET 9 Minimal API backend.
+4. **Dual-Mode Engine**: Operates 100% autonomously in the browser via Web Crypto API on static hosting (GitHub Pages) or connects to the high-performance .NET 10 LTS Minimal API backend.
 
 ### 4. Core Features & Capabilities
 - **Zero-Mock Clean State**: Boots ready for actual production documents with zero placeholder slop.
@@ -85,9 +85,9 @@ graph LR
         CRYPTO["Web Crypto API SHA-256"]
     end
 
-    subgraph Backend["Backend Service (.NET 9 Minimal API)"]
-        API["C# 13 Minimal API Endpoints"]
-        EF["Entity Framework Core 9 (SQLite)"]
+    subgraph Backend["Backend Service (.NET 10 LTS Minimal API)"]
+        API["C# 14 Minimal API Endpoints"]
+        EF["Entity Framework Core 10 (SQLite)"]
         LEDGER["Deterministic Audit Hash Provider"]
         AI["Gemini 2.5 Flash Multimodal OCR"]
     end
@@ -101,9 +101,9 @@ graph LR
 ```
 
 - **Frontend**: Angular 19 (Standalone Single-File Components, Signals, Native Web Crypto API, Lucide Icons).
-- **Backend**: .NET 9 Minimal API, C# 13, Entity Framework Core 9, SQLite.
+- **Backend**: .NET 10 LTS Minimal API, C# 14, Entity Framework Core 10, SQLite.
 - **AI Engine**: Google Gemini 2.5 Flash Multimodal Vision & OCR.
-- **Quality & Verification**: xUnit 9.0 (.NET), Playwright Headless Visual Testing, GitHub Actions CI.
+- **Quality & Verification**: xUnit (.NET 10), Playwright Headless Visual Testing, GitHub Actions CI.
 
 ### 6. Architecture & Data Flow
 
@@ -240,7 +240,7 @@ $$\text{RecordHash} = \text{SHA-256}(\text{PreviousHash} \parallel \text{Timesta
 
 ## 🛠️ REST API Specification (OpenAPI / Swagger)
 
-When running in **Enterprise Backend Mode**, the .NET 9 API exposes the following endpoints:
+When running in **Enterprise Backend Mode**, the .NET 10 LTS API exposes the following endpoints:
 
 | Method | Endpoint | Description | Auth Scope |
 | :--- | :--- | :--- | :--- |
@@ -268,7 +268,7 @@ When running in **Enterprise Backend Mode**, the .NET 9 API exposes the followin
 
 #### Prerequisites
 - Node.js 20+
-- .NET 9 SDK
+- .NET 10 LTS SDK
 
 #### 1. Frontend Client (Angular 19)
 ```powershell
@@ -278,7 +278,7 @@ npm start
 # Available at http://localhost:4280 or http://localhost:4200
 ```
 
-#### 2. Backend Service (.NET 9)
+#### 2. Backend Service (.NET 10 LTS)
 ```powershell
 cd backend/AiDocumentWorkflow.Api
 dotnet restore
@@ -307,7 +307,7 @@ docker-compose up --build -d
 ai-document-workflow/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                      # Enterprise CI: Secret scan, .NET 9 xUnit tests, Angular build
+│       └── ci.yml                      # Enterprise CI: Secret scan, .NET 10 LTS xUnit tests, Angular build
 ├── .gitignore                          # Excludes build outputs, local DBs, and private secrets
 ├── CONTEXT.md                          # Domain contracts, state transitions, and entity specifications
 ├── README.md                           # Master portfolio documentation (7 Product Pillars)
@@ -345,13 +345,13 @@ ai-document-workflow/
 │                   ├── upload-modal/upload-modal.component.ts     # Document upload & preset selector
 │                   └── audit-modal/audit-modal.component.ts       # Cryptographic chain inspector
 │
-└── backend/                            # .NET 9 Minimal API Enterprise Service
+└── backend/                            # .NET 10 LTS Minimal API Enterprise Service
     ├── Dockerfile                      # Multi-stage container definition
     ├── AiDocumentWorkflow.Api/
     │   ├── Program.cs                  # Minimal API bootstrap, OpenAPI, DI, and middleware
     │   ├── appsettings.json            # Base configuration
     │   ├── Controllers/                # REST endpoints (Documents, Workflow, Audit, Stats)
-    │   ├── Data/AppDbContext.cs        # Entity Framework Core 9 SQLite context
+    │   ├── Data/AppDbContext.cs        # Entity Framework Core 10 SQLite context
     │   ├── Models/                     # Core Domain Entities (Document, ApprovalStep, AuditLog)
     │   └── Services/                   # Gemini AI Multimodal OCR & SHA-256 Hash Provider
     └── AiDocumentWorkflow.Tests/       # xUnit Automated Unit & Security Test Suite
