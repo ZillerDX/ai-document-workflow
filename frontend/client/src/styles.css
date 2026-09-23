@@ -1,6 +1,58 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 :root {
+  /* LIGHT MODE (Default) */
+  --bg-canvas: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-subtle: #f1f5f9;
+  --border-subtle: #e2e8f0;
+  --border-prominent: #cbd5e1;
+  --border-active: #2563eb;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #1d4ed8;
+  --accent-primary-subtle: rgba(37, 99, 235, 0.08);
+
+  --accent-emerald: #059669;
+  --accent-emerald-subtle: rgba(5, 150, 105, 0.08);
+  --accent-emerald-border: rgba(5, 150, 105, 0.25);
+
+  --accent-amber: #d97706;
+  --accent-amber-subtle: rgba(217, 119, 6, 0.08);
+  --accent-amber-border: rgba(217, 119, 6, 0.25);
+
+  --accent-rose: #dc2626;
+  --accent-rose-subtle: rgba(220, 38, 38, 0.08);
+  --accent-rose-border: rgba(220, 38, 38, 0.25);
+
+  --accent-purple: #7c3aed;
+  --accent-purple-subtle: rgba(124, 58, 237, 0.08);
+
+  --skeleton-base: #f1f5f9;
+  --skeleton-highlight: #e2e8f0;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+  --spring-micro: all 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --spring-modal: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease-out;
+}
+
+[data-theme="dark"] {
+  /* DARK MODE */
   --bg-canvas: #090d16;
   --bg-surface: #0f172a;
   --bg-card: #131d33;
@@ -33,18 +85,13 @@
   --accent-purple: #8b5cf6;
   --accent-purple-subtle: rgba(139, 92, 246, 0.12);
 
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --skeleton-base: #131d33;
+  --skeleton-highlight: #1e293b;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-
-  --spring-micro: all 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  --spring-modal: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease-out;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
 }
 
 *, *::before, *::after {
@@ -156,7 +203,7 @@ button:disabled {
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #131d33 25%, #1e293b 50%, #131d33 75%);
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);

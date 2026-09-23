@@ -210,7 +210,7 @@ import { DocumentItem } from '../../models/document.model';
       justify-content: center;
       gap: 0.5rem;
       cursor: pointer;
-      background-color: rgba(255, 255, 255, 0.01);
+      background-color: var(--bg-card);
       transition: var(--spring-micro);
     }
 

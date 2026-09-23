@@ -592,7 +592,7 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--bg-subtle);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       padding: 0.6rem 0.85rem;
@@ -727,7 +727,7 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
 
     .items-table td {
       padding: 0.65rem 0.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .financial-summary-box {
@@ -999,7 +999,7 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
       font-size: 0.6875rem;
       font-style: italic;
       color: var(--text-muted);
-      background-color: rgba(255, 255, 255, 0.03);
+      background-color: var(--bg-subtle);
       padding: 0.35rem 0.5rem;
       border-radius: var(--radius-sm);
       margin-top: 0.25rem;
@@ -1055,7 +1055,7 @@ import { AuthPersonaService } from '../../services/auth-persona.service';
     }
 
     .form-field input:disabled {
-      background-color: rgba(255, 255, 255, 0.02);
+      background-color: var(--bg-subtle);
       color: var(--text-secondary);
       cursor: not-allowed;
     }

@@ -34,30 +34,22 @@ export interface RowRoleAuthority {
   ],
   template: `
     <div class="dashboard-page">
-      <!-- Executive Role & Permission Authority Bar -->
-      <section class="role-scope-banner" [attr.data-role]="currentPersona().role">
-        <div class="scope-left">
-          <div class="role-avatar-circle" [attr.data-role]="currentPersona().role">
-            {{ currentPersona().name.charAt(0) }}
+      <!-- Executive Minimal Page Header & Role Segment -->
+      <section class="page-header">
+        <div class="header-titles">
+          <div class="title-with-pill">
+            <h1 class="page-title">Document Operations</h1>
+            <span class="role-pill" [attr.data-role]="currentPersona().role">
+              {{ currentPersona().role }}
+            </span>
           </div>
-          <div class="scope-details">
-            <div class="scope-title-row">
-              <span class="user-name">{{ currentPersona().name }}</span>
-              <span class="role-pill" [attr.data-role]="currentPersona().role">
-                {{ currentPersona().badgeLabel }}
-              </span>
-              <span class="dept-text">• {{ currentPersona().department }}</span>
-            </div>
-            <div class="role-scope-desc">
-              <span class="scope-statement">{{ currentPersona().description }}</span>
-              <span class="scope-divider">|</span>
-              <span class="scope-governance">{{ getRoleScopeSummary() }}</span>
-            </div>
+          <div class="page-meta">
+            <span>Operating as <strong>{{ currentPersona().name }}</strong> • {{ currentPersona().department }}</span>
           </div>
         </div>
 
-        <div class="scope-right">
-          <span class="switch-hint">Active Session:</span>
+        <div class="role-segmented-tabs">
+          <span class="segment-hint">Switch Persona:</span>
           <div class="persona-pills">
             @for (p of authService.personas; track p.id) {
               <button 
@@ -702,63 +694,34 @@ export interface RowRoleAuthority {
       gap: 1.25rem;
     }
 
-    /* Executive Role Authority Bar */
-    .role-scope-banner {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.5rem;
+    /* Clean Minimal Page Header */
+    .page-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.5rem;
+      gap: 1.25rem;
       flex-wrap: wrap;
-      box-shadow: var(--shadow-md);
+      padding-bottom: 0.5rem;
     }
 
-    .scope-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .role-avatar-circle {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-md);
-      font-size: 1.125rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-primary);
-    }
-
-    .role-avatar-circle[data-role="Staff"] { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.35); }
-    .role-avatar-circle[data-role="Manager"] { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35); }
-    .role-avatar-circle[data-role="Finance"] { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
-    .role-avatar-circle[data-role="Auditor"] { background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.35); }
-
-    .scope-details {
+    .header-titles {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
     }
 
-    .scope-title-row {
+    .title-with-pill {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
+      gap: 0.75rem;
     }
 
-    .user-name {
-      font-size: 1rem;
+    .page-title {
+      font-size: 1.375rem;
       font-weight: 700;
+      letter-spacing: -0.02em;
       color: var(--text-primary);
+      margin: 0;
     }
 
     .role-pill {
@@ -770,62 +733,42 @@ export interface RowRoleAuthority {
       letter-spacing: 0.04em;
     }
 
-    .role-pill[data-role="Staff"] { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
-    .role-pill[data-role="Manager"] { background: rgba(245, 158, 11, 0.15); color: #fde68a; }
-    .role-pill[data-role="Finance"] { background: rgba(16, 185, 129, 0.15); color: #a7f3d0; }
-    .role-pill[data-role="Auditor"] { background: rgba(168, 85, 247, 0.15); color: #e9d5ff; }
+    .role-pill[data-role="Staff"] { background: var(--accent-primary-subtle); color: var(--accent-primary); border: 1px solid rgba(37, 99, 235, 0.2); }
+    .role-pill[data-role="Manager"] { background: var(--accent-amber-subtle); color: var(--accent-amber); border: 1px solid var(--accent-amber-border); }
+    .role-pill[data-role="Finance"] { background: var(--accent-emerald-subtle); color: var(--accent-emerald); border: 1px solid var(--accent-emerald-border); }
+    .role-pill[data-role="Auditor"] { background: var(--accent-purple-subtle); color: var(--accent-purple); border: 1px solid rgba(124, 58, 237, 0.2); }
 
-    .dept-text {
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-    }
-
-    .role-scope-desc {
+    .page-meta {
       font-size: 0.8125rem;
       color: var(--text-secondary);
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
     }
 
-    .scope-statement {
-      color: var(--text-secondary);
+    .page-meta strong {
+      color: var(--text-primary);
     }
 
-    .scope-divider {
-      color: var(--border-prominent);
-      font-weight: 300;
-    }
-
-    .scope-governance {
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      font-style: italic;
-    }
-
-    .scope-right {
+    .role-segmented-tabs {
       display: flex;
       align-items: center;
       gap: 0.75rem;
     }
 
-    .switch-hint {
+    .segment-hint {
       font-size: 0.6875rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       font-weight: 600;
     }
 
     .persona-pills {
       display: flex;
-      gap: 0.35rem;
+      gap: 0.25rem;
       background: var(--bg-card);
       padding: 0.25rem;
       border-radius: var(--radius-md);
       border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
     }
 
     .role-switch-btn {
@@ -845,7 +788,7 @@ export interface RowRoleAuthority {
 
     .role-switch-btn:hover {
       color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--bg-subtle);
     }
 
     .role-switch-btn.active {
@@ -939,12 +882,13 @@ export interface RowRoleAuthority {
       color: var(--text-primary);
     }
 
-    .text-amber { color: #fbbf24; }
-    .text-rose { color: #f87171; }
-    .text-emerald { color: #34d399; }
-    .text-primary { color: #60a5fa; }
-    .text-cyan { color: #38bdf8; }
-    .text-purple { color: #c084fc; }
+    .text-amber { color: var(--accent-amber); }
+    .text-rose { color: var(--accent-rose); }
+    .text-emerald { color: var(--accent-emerald); }
+    .text-primary { color: var(--accent-primary); }
+    .text-cyan { color: #0284c7; }
+    [data-theme="dark"] .text-cyan { color: #38bdf8; }
+    .text-purple { color: var(--accent-purple); }
 
     .metric-subtext {
       font-size: 0.75rem;
@@ -997,22 +941,35 @@ export interface RowRoleAuthority {
 
     .tab-badge {
       font-size: 0.6875rem;
-      padding: 0.15rem 0.45rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--bg-subtle);
       color: var(--text-secondary);
+      font-weight: 600;
     }
 
-    .warning-badge { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-    .danger-badge { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
-    .success-badge { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .warning-badge { 
+      background: var(--accent-amber-subtle); 
+      color: var(--accent-amber); 
+      border: 1px solid var(--accent-amber-border); 
+    }
+    .danger-badge { 
+      background: var(--accent-rose-subtle); 
+      color: var(--accent-rose); 
+      border: 1px solid var(--accent-rose-border); 
+    }
+    .success-badge { 
+      background: var(--accent-emerald-subtle); 
+      color: var(--accent-emerald); 
+      border: 1px solid var(--accent-emerald-border); 
+    }
 
     .pulse-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #f59e0b;
-      box-shadow: 0 0 6px #f59e0b;
+      background: var(--accent-amber);
+      box-shadow: 0 0 6px var(--accent-amber);
       animation: pulse 1.5s infinite;
     }
 
@@ -1035,25 +992,37 @@ export interface RowRoleAuthority {
     }
 
     .btn-preset {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      color: #93c5fd;
+      background: var(--accent-primary-subtle);
+      border: 1px solid var(--accent-primary);
+      color: var(--accent-primary);
       padding: 0.25rem 0.55rem;
       border-radius: var(--radius-sm);
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
+      transition: var(--spring-micro);
+    }
+
+    .btn-preset:hover {
+      background: var(--accent-primary);
+      color: #ffffff;
     }
 
     .btn-preset-danger {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: var(--accent-rose-subtle);
+      border: 1px solid var(--accent-rose);
+      color: var(--accent-rose);
       padding: 0.25rem 0.55rem;
       border-radius: var(--radius-sm);
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
+      transition: var(--spring-micro);
+    }
+
+    .btn-preset-danger:hover {
+      background: var(--accent-rose);
+      color: #ffffff;
     }
 
     /* Toolbar Section */
@@ -1155,8 +1124,8 @@ export interface RowRoleAuthority {
     }
 
     .documents-table th {
-      background: rgba(255, 255, 255, 0.02);
-      color: var(--text-muted);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -1167,7 +1136,7 @@ export interface RowRoleAuthority {
 
     .documents-table td {
       padding: 0.65rem 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid var(--border-subtle);
       vertical-align: middle;
       white-space: nowrap;
       height: 52px;
@@ -1179,28 +1148,28 @@ export interface RowRoleAuthority {
     }
 
     .document-row:hover td {
-      background: rgba(255, 255, 255, 0.035);
+      background: var(--bg-card-hover);
     }
 
     /* Row Priority Accent when Active Role has Action Duty */
     .document-row.row-action-priority td:first-child {
-      border-left: 3px solid #f59e0b;
+      border-left: 3px solid var(--accent-amber);
     }
 
     .document-row.row-action-priority[data-acting-role="Finance"] td:first-child {
-      border-left: 3px solid #10b981;
+      border-left: 3px solid var(--accent-emerald);
     }
 
     .document-row.row-action-priority[data-acting-role="Staff"] td:first-child {
-      border-left: 3px solid #ef4444;
+      border-left: 3px solid var(--accent-rose);
     }
 
     .document-row.row-action-priority {
-      background: rgba(255, 255, 255, 0.015);
+      background: var(--accent-amber-subtle);
     }
 
     .document-row.has-anomaly td {
-      background: rgba(239, 68, 68, 0.02);
+      background: var(--accent-rose-subtle);
     }
 
     /* 1. Document Reference Cell - Compact */
@@ -1214,11 +1183,11 @@ export interface RowRoleAuthority {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 600;
       font-size: 0.75rem;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.08);
+      color: var(--accent-primary);
+      background: var(--accent-primary-subtle);
       padding: 0.15rem 0.45rem;
       border-radius: var(--radius-sm);
-      border: 1px solid rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(37, 99, 235, 0.2);
     }
 
     .doc-type-pill {
@@ -1226,22 +1195,22 @@ export interface RowRoleAuthority {
       font-weight: 600;
       padding: 0.15rem 0.45rem;
       border-radius: var(--radius-sm);
-      background: var(--bg-card);
+      background: var(--bg-subtle);
       color: var(--text-secondary);
       border: 1px solid var(--border-subtle);
       text-transform: uppercase;
     }
 
     .doc-type-pill[data-type="Quotation"] {
-      background: rgba(168, 85, 247, 0.1);
-      color: #d8b4fe;
-      border-color: rgba(168, 85, 247, 0.25);
+      background: var(--accent-purple-subtle);
+      color: var(--accent-purple);
+      border-color: rgba(124, 58, 237, 0.2);
     }
 
     .doc-type-pill[data-type="PurchaseOrder"] {
-      background: rgba(245, 158, 11, 0.1);
-      color: #fde68a;
-      border-color: rgba(245, 158, 11, 0.25);
+      background: var(--accent-amber-subtle);
+      color: var(--accent-amber);
+      border-color: var(--accent-amber-border);
     }
 
     /* 2. Counterparty Cell - Single Line */
@@ -1287,9 +1256,9 @@ export interface RowRoleAuthority {
       gap: 0.35rem;
       font-size: 0.6875rem;
       font-weight: 600;
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--accent-emerald);
+      background: var(--accent-emerald-subtle);
+      border: 1px solid var(--accent-emerald-border);
       padding: 0.2rem 0.5rem;
       border-radius: var(--radius-sm);
     }
@@ -1300,9 +1269,9 @@ export interface RowRoleAuthority {
       gap: 0.35rem;
       font-size: 0.6875rem;
       font-weight: 600;
-      color: #f87171;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: var(--accent-rose);
+      background: var(--accent-rose-subtle);
+      border: 1px solid var(--accent-rose-border);
       padding: 0.2rem 0.5rem;
       border-radius: var(--radius-sm);
     }
@@ -1341,40 +1310,40 @@ export interface RowRoleAuthority {
     }
 
     .stepper-step.step-active .step-indicator {
-      border-color: #f59e0b;
-      color: #f59e0b;
-      box-shadow: 0 0 5px rgba(245, 158, 11, 0.35);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+      box-shadow: 0 0 5px rgba(217, 119, 6, 0.25);
     }
 
     .stepper-step.step-active .step-label {
-      color: #fbbf24;
+      color: var(--accent-amber);
       font-weight: 600;
     }
 
     .stepper-step.step-done .step-indicator {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: rgba(16, 185, 129, 0.4);
-      color: #34d399;
+      background: var(--accent-emerald-subtle);
+      border-color: var(--accent-emerald-border);
+      color: var(--accent-emerald);
     }
 
     .stepper-step.step-done .step-label {
-      color: #34d399;
+      color: var(--accent-emerald);
     }
 
     .stepper-step.step-rejected .step-indicator {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #f87171;
+      background: var(--accent-rose-subtle);
+      border-color: var(--accent-rose-border);
+      color: var(--accent-rose);
     }
 
     .stepper-step.step-rejected .step-label {
-      color: #f87171;
+      color: var(--accent-rose);
     }
 
     .stepper-step.step-revision .step-indicator {
-      background: rgba(245, 158, 11, 0.15);
-      border-color: rgba(245, 158, 11, 0.4);
-      color: #fbbf24;
+      background: var(--accent-amber-subtle);
+      border-color: var(--accent-amber-border);
+      color: var(--accent-amber);
     }
 
     .stepper-connector {
@@ -1384,7 +1353,7 @@ export interface RowRoleAuthority {
     }
 
     .stepper-connector.connector-done {
-      background: #34d399;
+      background: var(--accent-emerald);
     }
 
     /* 7. Role Duty & Action Cell - HORIZONTAL SAME LEVEL ALIGNMENT */
@@ -1416,27 +1385,27 @@ export interface RowRoleAuthority {
     }
 
     .duty-badge[data-type="action-required"] {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fde68a;
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: var(--accent-amber-subtle);
+      color: var(--accent-amber);
+      border: 1px solid var(--accent-amber-border);
     }
 
     .duty-badge[data-type="waiting-other"] {
-      background: var(--bg-card);
+      background: var(--bg-subtle);
       color: var(--text-muted);
       border: 1px solid var(--border-subtle);
     }
 
     .duty-badge[data-type="completed"] {
-      background: rgba(16, 185, 129, 0.12);
-      color: #a7f3d0;
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: var(--accent-emerald-subtle);
+      color: var(--accent-emerald);
+      border: 1px solid var(--accent-emerald-border);
     }
 
     .duty-badge[data-type="forensics"] {
-      background: rgba(168, 85, 247, 0.12);
-      color: #e9d5ff;
-      border: 1px solid rgba(168, 85, 247, 0.25);
+      background: var(--accent-purple-subtle);
+      color: var(--accent-purple);
+      border: 1px solid rgba(124, 58, 237, 0.25);
     }
 
     .duty-pulse-dot {

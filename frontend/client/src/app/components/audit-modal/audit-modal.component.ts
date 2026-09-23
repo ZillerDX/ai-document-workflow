@@ -224,14 +224,14 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
     }
 
     .close-btn:hover {
-      background-color: rgba(255, 255, 255, 0.05);
+      background-color: var(--bg-card-hover);
       color: var(--text-primary);
       border-color: var(--border-subtle);
     }
 
     .integrity-banner {
-      background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 19, 31, 0.95) 100%);
-      border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
       padding: 0.75rem 1.75rem;
       display: flex;
       align-items: center;
@@ -249,9 +249,9 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
       width: 32px;
       height: 32px;
       border-radius: var(--radius-md);
-      background-color: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background-color: var(--accent-emerald-subtle);
+      color: var(--accent-emerald);
+      border: 1px solid var(--accent-emerald-border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -259,7 +259,7 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
     }
 
     .shield-badge.verified {
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 12px var(--accent-emerald-subtle);
     }
 
     .integrity-title {
@@ -267,9 +267,9 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
       color: var(--text-secondary);
     }
 
-    .text-emerald { color: #34d399; }
-    .text-amber { color: #fbbf24; }
-    .text-rose { color: #f43f5e; }
+    .text-emerald { color: var(--accent-emerald); }
+    .text-amber { color: var(--accent-amber); }
+    .text-rose { color: var(--accent-rose); }
 
     .integrity-desc {
       font-size: 0.75rem;
@@ -281,8 +281,8 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      background-color: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
       color: var(--text-primary);
       font-size: 0.75rem;
       font-weight: 600;
@@ -294,9 +294,9 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
     }
 
     .btn-verify:hover:not(:disabled) {
-      background-color: rgba(255, 255, 255, 0.08);
-      border-color: rgba(16, 185, 129, 0.4);
-      color: #34d399;
+      background-color: var(--accent-emerald-subtle);
+      border-color: var(--accent-emerald-border);
+      color: var(--accent-emerald);
     }
 
     .btn-verify:disabled {
@@ -369,8 +369,8 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
     }
 
     .audit-table th {
-      background-color: rgba(255, 255, 255, 0.02);
-      color: var(--text-muted);
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
       font-size: 0.6875rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -384,12 +384,12 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
 
     .audit-table td {
       padding: 0.75rem 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid var(--border-subtle);
       vertical-align: top;
     }
 
     .log-row:hover {
-      background-color: rgba(255, 255, 255, 0.015);
+      background-color: var(--bg-card-hover);
     }
 
     .timestamp-cell {
@@ -403,12 +403,12 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
     }
 
     .hash-chip {
-      background-color: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background-color: var(--accent-purple-subtle);
+      border: 1px solid rgba(124, 58, 237, 0.2);
       padding: 0.15rem 0.4rem;
       border-radius: var(--radius-sm);
       font-size: 0.6875rem;
-      color: #a78bfa;
+      color: var(--accent-purple);
     }
 
     .action-pill {
@@ -422,15 +422,15 @@ import { AuditLog, AuditIntegrityReport } from '../../models/document.model';
       white-space: nowrap;
     }
 
-    .action-pill[data-action="Uploaded"] { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-    .action-pill[data-action="AiAnalyzed"] { background-color: rgba(168, 85, 247, 0.15); color: #c084fc; }
-    .action-pill[data-action="ApprovedLevel1"] { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-    .action-pill[data-action="ApprovedLevel2"] { background-color: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .action-pill[data-action="Rejected"] { background-color: rgba(244, 63, 94, 0.15); color: #fb7185; }
-    .action-pill[data-action="RevisionRequested"] { background-color: rgba(251, 146, 60, 0.15); color: #fb923c; }
-    .action-pill[data-action="Resubmitted"] { background-color: rgba(34, 197, 94, 0.15); color: #4ade80; }
-    .action-pill[data-action="FieldEdited"] { background-color: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
-    .action-pill[data-action="ReAnalyzed"] { background-color: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .action-pill[data-action="Uploaded"] { background-color: var(--accent-primary-subtle); color: var(--accent-primary); }
+    .action-pill[data-action="AiAnalyzed"] { background-color: var(--accent-purple-subtle); color: var(--accent-purple); }
+    .action-pill[data-action="ApprovedLevel1"] { background-color: var(--accent-amber-subtle); color: var(--accent-amber); }
+    .action-pill[data-action="ApprovedLevel2"] { background-color: var(--accent-emerald-subtle); color: var(--accent-emerald); }
+    .action-pill[data-action="Rejected"] { background-color: var(--accent-rose-subtle); color: var(--accent-rose); }
+    .action-pill[data-action="RevisionRequested"] { background-color: var(--accent-amber-subtle); color: var(--accent-amber); }
+    .action-pill[data-action="Resubmitted"] { background-color: var(--accent-emerald-subtle); color: var(--accent-emerald); }
+    .action-pill[data-action="FieldEdited"] { background-color: var(--bg-subtle); color: var(--text-secondary); }
+    .action-pill[data-action="ReAnalyzed"] { background-color: var(--accent-primary-subtle); color: var(--accent-primary); }
 
     .doc-cell {
       color: var(--accent-primary);

@@ -68,6 +68,34 @@ import { UserPersona } from '../../models/document.model';
           }
         </div>
 
+        <!-- Theme Toggle Button (Light / Dark) -->
+        <button 
+          type="button" 
+          class="theme-toggle-btn" 
+          (click)="uiState.toggleTheme()" 
+          [title]="uiState.theme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+          aria-label="Toggle Theme">
+          @if (uiState.theme() === 'light') {
+            <!-- Sun icon when Light Mode is active -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          } @else {
+            <!-- Moon icon when Dark Mode is active -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          }
+        </button>
+
         @if (authService.canViewAuditLedger()) {
           <button type="button" class="btn-secondary" (click)="uiState.openAudit()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -153,6 +181,27 @@ import { UserPersona } from '../../models/document.model';
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       color: var(--text-primary);
+    }
+
+    .theme-toggle-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--spring-micro);
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: var(--border-prominent);
     }
 
     .persona-avatar {
