@@ -16,9 +16,9 @@
 
 ## 📸 Visual Showcase & Architectural Highlights
 
-### 1. Executive Operations Dashboard & Clean Uniform Table (~52px)
-High-density financial operations dashboard with real-time KPI metrics, role authority headers, smart queue tabs, and single-line 52px table rows.
-![Hero Executive Dashboard](docs/assets/screenshots/hero_dashboard_enterprise.png)
+### 1. Executive Operations Dashboard in Clean Light Mode (with Instant Dark Mode Toggle)
+High-density financial operations dashboard with real-time KPI metrics, streamlined role selection, smart queue tabs, single-line 52px table rows, and instant Sun/Moon theme toggling.
+![Hero Executive Dashboard in Light Mode](docs/assets/screenshots/hero_dashboard_light_mode.png)
 
 ---
 
@@ -68,6 +68,7 @@ AegisFlow AI enforces an autonomous, end-to-end multi-tier pipeline:
 4. **Dual-Mode Engine**: Operates 100% autonomously in the browser via Web Crypto API on static hosting (GitHub Pages) or connects to the high-performance .NET 10 LTS Minimal API backend.
 
 ### 4. Core Features & Capabilities
+- **Light Mode Default with Instant Dark Toggle**: High-clarity Slate/White design tokens by default, toggleable to deep obsidian dark mode with zero layout shift and automatic `localStorage` persistence.
 - **Zero-Mock Clean State**: Boots ready for actual production documents with zero placeholder slop.
 - **1-Click Business Presets**: Test clean invoices, tax discrepancies, or GPU hardware quotes instantly.
 - **Equal-Height Table Rows (52px)**: Streamlined, single-line typography with all action buttons anchored to the same horizontal baseline.
