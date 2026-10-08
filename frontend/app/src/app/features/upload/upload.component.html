@@ -1,0 +1,84 @@
+<div class="page-head">
+  <div>
+    <h1>Upload a document</h1>
+    <p>
+      The AI extracts the fields, checks the math and routes it to a manager for Level 1 review.
+    </p>
+  </div>
+</div>
+
+<div class="stack">
+  <section class="card">
+    <div class="card-body stack">
+      <label
+        class="drop"
+        [class.dragging]="dragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="dragging.set(false)"
+        (drop)="onDrop($event)"
+      >
+        <app-icon name="upload" [size]="28" />
+        <strong>Drop a file here, or click to choose</strong>
+        <span class="muted">PDF, PNG or JPEG · up to 10 MB</span>
+        <input class="sr-only" type="file" [accept]="accept" (change)="onPick($event)" />
+      </label>
+
+      @if (problem(); as p) {
+        <div class="notice notice-danger" role="alert"><app-icon name="alert" /> {{ p }}</div>
+      }
+
+      @if (file(); as f) {
+        <div class="picked">
+          <app-icon name="file" />
+          <div class="grow">
+            <strong>{{ f.name }}</strong>
+            <div class="muted small">{{ formatBytes(f.size) }}</div>
+          </div>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            (click)="clear()"
+            aria-label="Remove file"
+          >
+            <app-icon name="x" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="busy() !== null"
+            (click)="submit()"
+          >
+            {{ busy() === 'upload' ? 'Analyzing…' : 'Upload and analyze' }}
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2>No file handy? Try a sample</h2>
+    <div class="samples">
+      @for (s of samples; track s.id) {
+        <div class="card sample">
+          <div class="grow">
+            <div class="row tight">
+              <strong>{{ s.title }}</strong>
+              @if (s.flagged) {
+                <span class="badge badge-warn">Has an anomaly</span>
+              }
+            </div>
+            <p class="muted small">{{ s.blurb }}</p>
+          </div>
+          <button
+            type="button"
+            class="btn btn-sm"
+            [disabled]="busy() !== null"
+            (click)="useSample(s)"
+          >
+            {{ busy() === s.id ? 'Creating…' : 'Use sample' }}
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+</div>

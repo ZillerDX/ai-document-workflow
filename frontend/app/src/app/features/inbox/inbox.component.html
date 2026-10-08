@@ -1,0 +1,157 @@
+<div class="page-head">
+  <div>
+    <h1>Inbox</h1>
+    <p>
+      Signed in as <strong>{{ session.user().name }}</strong> ({{ session.user().role }}).
+      {{ session.user().blurb }}
+    </p>
+  </div>
+  @if (canUpload()) {
+    <a class="btn btn-primary" routerLink="/upload"><app-icon name="upload" /> Upload document</a>
+  }
+</div>
+
+@if (error(); as message) {
+  <div class="notice notice-danger" role="alert">
+    <app-icon name="alert" />
+    <div class="grow">{{ message }}</div>
+    <button type="button" class="btn btn-sm" (click)="reload()">Retry</button>
+  </div>
+} @else {
+  <section class="kpis" aria-label="Summary">
+    <div class="card kpi" [class.kpi-attn]="counts().mine > 0">
+      <span class="kpi-label">Needs my action</span>
+      <span class="kpi-value">{{ counts().mine }}</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">In progress</span>
+      <span class="kpi-value">{{ counts().progress }}</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Approved</span>
+      <span class="kpi-value">{{ stats.value()?.approvedDocuments ?? '–' }}</span>
+    </div>
+    <div class="card kpi" [class.kpi-warn]="(stats.value()?.anomalyCount ?? 0) > 0">
+      <span class="kpi-label">AI anomalies</span>
+      <span class="kpi-value">{{ stats.value()?.anomalyCount ?? '–' }}</span>
+    </div>
+    @if (showTotals() && stats.value(); as s) {
+      <div class="card kpi">
+        <span class="kpi-label">Pending spend</span>
+        <span class="kpi-value">{{ formatMoney(s.totalPendingSpend) }}</span>
+      </div>
+    }
+  </section>
+
+  <section class="card list">
+    <div class="toolbar">
+      <div class="tabs" role="tablist" aria-label="Document queues">
+        @for (t of tabs; track t.id) {
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            [class.active]="activeTab() === t.id"
+            [attr.aria-selected]="activeTab() === t.id"
+            (click)="tab.set(t.id)"
+          >
+            {{ t.label }} <span class="count">{{ counts()[t.id] }}</span>
+          </button>
+        }
+      </div>
+      <div class="filters">
+        <input
+          class="input"
+          type="search"
+          placeholder="Search number, vendor, customer"
+          aria-label="Search documents"
+          [value]="search()"
+          (input)="onSearch($event)"
+        />
+        <select
+          class="select"
+          aria-label="Filter by type"
+          [value]="type()"
+          (change)="onType($event)"
+        >
+          <option value="all">All types</option>
+          @for (t of typeOptions; track t[0]) {
+            <option [value]="t[0]">{{ t[1] }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (docs.isLoading() && !docs.hasValue()) {
+      <div class="loading" aria-busy="true">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="skeleton row-skel"></div>
+        }
+      </div>
+    } @else if (visible().length === 0) {
+      <div class="empty">
+        @if (activeTab() === 'mine') {
+          <strong>Nothing is waiting for you.</strong>
+          <p>
+            @if (canUpload()) {
+              Upload a document or try a sample to start a workflow.
+            } @else {
+              New documents will show up here when they need your review.
+            }
+          </p>
+          @if (canUpload()) {
+            <a class="btn btn-primary" routerLink="/upload">Upload or try a sample</a>
+          }
+        } @else {
+          <strong>No documents match.</strong>
+          <p>Try another queue or clear the filters.</p>
+        }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th class="num">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of visible(); track d.id) {
+              <tr class="clickable" (click)="open(d)">
+                <td>
+                  <a
+                    class="doc-link"
+                    [routerLink]="['/documents', d.id]"
+                    (click)="$event.stopPropagation()"
+                    >{{ d.documentNumber }}</a
+                  >
+                  <div class="muted small">
+                    {{ typeLabels[d.documentType] }} · {{ d.vendorName }}
+                  </div>
+                </td>
+                <td>
+                  <div class="row tight">
+                    <app-status-badge [status]="d.status" />
+                    @if (d.aiAnomalyDetected) {
+                      <span class="badge badge-warn"
+                        ><app-icon name="alert" [size]="12" /> Anomaly</span
+                      >
+                    }
+                  </div>
+                </td>
+                <td>
+                  <div>{{ d.uploadedByUserName }}</div>
+                  <div class="muted small">{{ formatDate(d.createdAt) }}</div>
+                </td>
+                <td class="num">{{ formatMoney(d.totalAmount, d.currency) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+}

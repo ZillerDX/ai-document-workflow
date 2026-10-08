@@ -1,0 +1,108 @@
+<div class="page-head">
+  <div>
+    <h1>Audit ledger</h1>
+    <p>
+      Every upload, edit and decision, chained so that changing an old record breaks every record
+      after it.
+    </p>
+  </div>
+  <button type="button" class="btn btn-primary" [disabled]="verifying()" (click)="verify()">
+    <app-icon name="shield" /> {{ verifying() ? 'Verifying…' : 'Verify chain' }}
+  </button>
+</div>
+
+@if (!isHttp) {
+  <div class="notice notice-warn caveat" role="note">
+    <app-icon name="alert" />
+    <span>
+      Browser demo: this chain is computed and checked inside your browser, so anyone with access to
+      this browser can rewrite it. Connect the .NET API for a ledger the client cannot alter.
+    </span>
+  </div>
+}
+
+@if (report(); as r) {
+  <div
+    class="notice caveat"
+    [class.notice-ok]="r.verified"
+    [class.notice-danger]="!r.verified"
+    role="status"
+  >
+    <app-icon [name]="r.verified ? 'check' : 'alert'" />
+    <div>
+      <strong>{{ r.verified ? 'Chain verified' : 'Chain broken' }}</strong> · {{ r.count }} records
+      <div>{{ r.message }}</div>
+      @if (r.latestHash) {
+        <div class="mono small">head {{ shortHash(r.latestHash) }}</div>
+      }
+    </div>
+  </div>
+}
+
+<section class="card">
+  <div class="card-head">
+    <input
+      class="input search"
+      type="search"
+      placeholder="Search action, actor, document or details"
+      aria-label="Search the ledger"
+      [value]="search()"
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  @if (error(); as message) {
+    <div class="notice notice-danger inset" role="alert">
+      <app-icon name="alert" /> {{ message }}
+    </div>
+  } @else if (logs.value(); as list) {
+    @if (list.length === 0) {
+      <div class="empty">No records match.</div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="num">#</th>
+              <th>When</th>
+              <th>Action</th>
+              <th>Actor</th>
+              <th>Document</th>
+              <th>Details</th>
+              <th>Hash</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of list; track l.id) {
+              <tr>
+                <td class="num mono">{{ l.sequence }}</td>
+                <td class="nowrap">{{ formatDateTime(l.timestamp) }}</td>
+                <td>
+                  <span class="badge">{{ l.action }}</span>
+                </td>
+                <td>
+                  {{ l.actorName }}
+                  <div class="muted small">{{ l.actorRole }}</div>
+                </td>
+                <td>
+                  @if (l.documentId) {
+                    <a [routerLink]="['/documents', l.documentId]">{{ l.documentNumber }}</a>
+                  } @else {
+                    –
+                  }
+                </td>
+                <td class="details">{{ l.details }}</td>
+                <td class="mono" [title]="l.recordHash">{{ shortHash(l.recordHash) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (list.length >= 100) {
+        <p class="muted small foot">Showing the latest 100 records.</p>
+      }
+    }
+  } @else {
+    <div class="inset" aria-busy="true"><div class="skeleton" style="height: 120px"></div></div>
+  }
+</section>

@@ -1,0 +1,22 @@
+.caveat {
+  margin-bottom: 16px;
+}
+.search {
+  max-width: 420px;
+}
+.inset {
+  margin: 16px;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.details {
+  min-width: 260px;
+  max-width: 520px;
+}
+.small {
+  font-size: 0.82rem;
+}
+.foot {
+  padding: 10px 14px;
+}
