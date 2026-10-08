@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AiDocumentWorkflow.Api.Auth;
 using AiDocumentWorkflow.Api.Data;
 using AiDocumentWorkflow.Api.Models;
 using AiDocumentWorkflow.Api.Services;
@@ -13,9 +14,14 @@ using AiDocumentWorkflow.Api.Services;
 namespace AiDocumentWorkflow.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class DocumentsController : ControllerBase
     {
+        public const long MaxUploadBytes = 10 * 1024 * 1024;
+        private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase) { ".pdf", ".png", ".jpg", ".jpeg" };
+        private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase) { "application/pdf", "image/png", "image/jpeg" };
+
         private readonly AppDbContext _context;
         private readonly IGeminiDocumentService _geminiService;
         private readonly IAuditService _auditService;
@@ -27,13 +33,13 @@ namespace AiDocumentWorkflow.Api.Controllers
             _auditService = auditService;
         }
 
+        private IQueryable<Document> DocumentsWithChildren() =>
+            _context.Documents.Include(d => d.ApprovalSteps).Include(d => d.LineItems);
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Document>>> GetDocuments([FromQuery] string? status, [FromQuery] string? type, [FromQuery] string? search)
+        public async Task<ActionResult<IEnumerable<DocumentDto>>> GetDocuments([FromQuery] string? status, [FromQuery] string? type, [FromQuery] string? search)
         {
-            var query = _context.Documents
-                .Include(d => d.ApprovalSteps)
-                .Include(d => d.LineItems)
-                .AsQueryable();
+            var query = DocumentsWithChildren().AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(status) && status != "all")
             {
@@ -54,102 +60,254 @@ namespace AiDocumentWorkflow.Api.Controllers
             }
 
             var list = await query.OrderByDescending(d => d.CreatedAt).ToListAsync();
-            return Ok(list);
+            return Ok(list.Select(DocumentDto.From));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Document>> GetDocument(Guid id)
+        public async Task<ActionResult<DocumentDto>> GetDocument(Guid id)
         {
-            var doc = await _context.Documents
-                .Include(d => d.ApprovalSteps)
-                .Include(d => d.LineItems)
-                .Include(d => d.AuditLogs.OrderByDescending(a => a.Timestamp))
-                .FirstOrDefaultAsync(d => d.Id == id);
-
+            var doc = await DocumentsWithChildren().AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
             if (doc == null)
             {
                 return NotFound(new { message = $"Document with ID {id} not found." });
             }
 
-            return Ok(doc);
+            return Ok(DocumentDto.From(doc));
         }
 
         [HttpPost("upload")]
-        public async Task<ActionResult<Document>> UploadDocument([FromForm] IFormFile file, [FromForm] string? uploadedByUserId, [FromForm] string? uploadedByUserName, [FromForm] string? uploadedByRole)
+        [Authorize(Roles = Roles.Submitters)]
+        [RequestSizeLimit(MaxUploadBytes + 1024 * 1024)]
+        public async Task<ActionResult<DocumentDto>> UploadDocument(IFormFile file)
         {
-            if (string.Equals(uploadedByRole, "Auditor", StringComparison.OrdinalIgnoreCase))
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = "Auditor role has strictly read-only forensic access and cannot upload documents." });
-            }
+            var actor = ActorContext.FromPrincipal(User);
 
             if (file == null || file.Length == 0)
             {
                 return BadRequest(new { message = "A valid file is required." });
             }
 
-            var userId = uploadedByUserId ?? "usr-staff-01";
-            var userName = uploadedByUserName ?? "Staff Member";
+            if (file.Length > MaxUploadBytes)
+            {
+                return StatusCode(StatusCodes.Status413PayloadTooLarge, new { message = $"File exceeds the {MaxUploadBytes / (1024 * 1024)} MB limit." });
+            }
+
+            var extension = Path.GetExtension(file.FileName);
+            if (!AllowedExtensions.Contains(extension) || !AllowedContentTypes.Contains(file.ContentType ?? string.Empty))
+            {
+                return StatusCode(StatusCodes.Status415UnsupportedMediaType, new { message = "Only PDF, PNG and JPEG files are accepted." });
+            }
+
+            await using var buffer = new MemoryStream();
+            await file.CopyToAsync(buffer);
+            buffer.Position = 0;
+
+            var aiResult = await _geminiService.ExtractAndAnalyzeAsync(buffer, file.FileName, file.ContentType!);
+
+            var docNumber = string.IsNullOrWhiteSpace(aiResult.DocumentNumber)
+                ? $"DOC-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}"
+                : aiResult.DocumentNumber.Trim();
+
+            if (await _context.Documents.AnyAsync(d => d.DocumentNumber == docNumber))
+            {
+                throw new ConflictException($"A document numbered '{docNumber}' already exists.");
+            }
 
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
-            if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+            var storedName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            await System.IO.File.WriteAllBytesAsync(Path.Combine(uploadsFolder, storedName), buffer.ToArray());
+
+            var document = BuildDocument(aiResult, docNumber, actor);
+            document.OriginalFileName = Path.GetFileName(file.FileName);
+            document.StoredFilePath = storedName;
+            document.ContentType = file.ContentType;
+            document.FileSizeBytes = file.Length;
+
+            _context.Documents.Add(document);
+            await _auditService.StageAsync(document.Id, docNumber, "Uploaded", actor.Id, actor.Name, actor.Role,
+                $"Document '{document.OriginalFileName}' uploaded and initialized in multi-level workflow queue.");
+            await StageAiLog(document, aiResult, "ANOMALY DETECTED", "All fields validated cleanly");
+            await DocumentWorkflowService.SaveAtomicAsync(_context);
+
+            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, DocumentDto.From(document));
+        }
+
+        [HttpPost("preset/{presetType}")]
+        [Authorize(Roles = Roles.Submitters)]
+        public async Task<ActionResult<DocumentDto>> CreatePresetDocument(string presetType)
+        {
+            var actor = ActorContext.FromPrincipal(User);
+            var aiResult = await _geminiService.GenerateMockPresetAsync(presetType);
+
+            var document = BuildDocument(aiResult, aiResult.DocumentNumber, actor);
+            document.OriginalFileName = $"{aiResult.DocumentNumber.Replace('-', '_')}_preset.pdf";
+            document.ContentType = "application/pdf";
+            document.FileSizeBytes = 124800;
+
+            _context.Documents.Add(document);
+            await _auditService.StageAsync(document.Id, document.DocumentNumber, "Uploaded", actor.Id, actor.Name, actor.Role,
+                $"Sample enterprise document preset '{presetType}' initialized.");
+            await StageAiLog(document, aiResult, "ANOMALY FLAGGED", "Automated extraction completed without discrepancies");
+            await DocumentWorkflowService.SaveAtomicAsync(_context);
+
+            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, DocumentDto.From(document));
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = Roles.Staff)]
+        public async Task<ActionResult<DocumentDto>> UpdateDocument(Guid id, [FromBody] UpdateDocumentDto dto)
+        {
+            var actor = ActorContext.FromPrincipal(User);
+            var doc = await DocumentsWithChildren().FirstOrDefaultAsync(d => d.Id == id);
+            if (doc == null)
             {
-                Directory.CreateDirectory(uploadsFolder);
+                return NotFound(new { message = $"Document with ID {id} not found." });
             }
 
-            var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            if (doc.Status != DocStatus.PendingLevel1 && doc.Status != DocStatus.RevisionRequested)
             {
-                await file.CopyToAsync(stream);
+                throw new InvalidOperationException($"Document {doc.DocumentNumber} is '{doc.Status}' and its fields are locked. Fields can only be edited before Level 1 is decided or while a revision is requested.");
             }
 
-            // Perform Gemini extraction
-            GeminiExtractionResult aiResult;
-            using (var readStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            if (dto.Version.HasValue && dto.Version.Value != doc.Version)
             {
-                aiResult = await _geminiService.ExtractAndAnalyzeAsync(readStream, file.FileName, file.ContentType);
+                throw new ConflictException($"Document {doc.DocumentNumber} was changed by someone else. Reload and try again.");
             }
 
+            if (new[] { dto.SubTotal, dto.TaxRate, dto.TaxAmount, dto.TotalAmount }.Any(v => v < 0))
+            {
+                throw new ArgumentException("Amounts and tax rate must not be negative.");
+            }
+
+            var changes = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(dto.DocumentNumber) && dto.DocumentNumber != doc.DocumentNumber)
+            {
+                if (await _context.Documents.AnyAsync(d => d.DocumentNumber == dto.DocumentNumber && d.Id != doc.Id))
+                {
+                    throw new ConflictException($"A document numbered '{dto.DocumentNumber}' already exists.");
+                }
+                changes.Add($"Document Number: '{doc.DocumentNumber}' -> '{dto.DocumentNumber}'");
+                doc.DocumentNumber = dto.DocumentNumber;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.VendorName) && dto.VendorName != doc.VendorName)
+            {
+                changes.Add($"Vendor: '{doc.VendorName}' -> '{dto.VendorName}'");
+                doc.VendorName = dto.VendorName;
+            }
+
+            if (dto.TotalAmount.HasValue && dto.TotalAmount != doc.TotalAmount)
+            {
+                changes.Add($"Total Amount: {doc.Currency} {doc.TotalAmount:N2} -> {doc.Currency} {dto.TotalAmount:N2}");
+                doc.TotalAmount = dto.TotalAmount.Value;
+            }
+
+            if (dto.SubTotal.HasValue && dto.SubTotal != doc.SubTotal)
+            {
+                changes.Add($"Sub Total: {doc.Currency} {doc.SubTotal:N2} -> {doc.Currency} {dto.SubTotal:N2}");
+                doc.SubTotal = dto.SubTotal.Value;
+            }
+
+            if (dto.TaxAmount.HasValue && dto.TaxAmount != doc.TaxAmount)
+            {
+                changes.Add($"Tax Amount: {doc.Currency} {doc.TaxAmount:N2} -> {doc.Currency} {dto.TaxAmount:N2}");
+                doc.TaxAmount = dto.TaxAmount.Value;
+            }
+
+            if (dto.TaxRate.HasValue && dto.TaxRate != doc.TaxRate)
+            {
+                changes.Add($"Tax Rate: {doc.TaxRate}% -> {dto.TaxRate}%");
+                doc.TaxRate = dto.TaxRate.Value;
+            }
+
+            if (dto.IssueDate.HasValue) doc.IssueDate = dto.IssueDate.Value;
+            if (dto.DueDate.HasValue) doc.DueDate = dto.DueDate.Value;
+            if (!string.IsNullOrWhiteSpace(dto.TaxId)) doc.TaxId = dto.TaxId;
+
+            var calculatedTax = Math.Round(doc.SubTotal * (doc.TaxRate / 100.0m), 2);
+            if (Math.Abs(doc.TaxAmount - calculatedTax) <= 0.05m && doc.AiAnomalyDetected)
+            {
+                doc.AiAnomalyDetected = false;
+                doc.AiAnomalyNotes = "Previously flagged tax anomaly was manually reviewed and verified by user.";
+                changes.Add("Anomaly resolved via user manual reconciliation.");
+            }
+
+            doc.UpdatedAt = DateTime.UtcNow;
+
+            var diffSummary = changes.Any() ? string.Join("; ", changes) : "Fields updated without major variance.";
+            await _auditService.StageAsync(doc.Id, doc.DocumentNumber, "FieldEdited", actor.Id, actor.Name, actor.Role,
+                $"Manual field correction: {diffSummary}. Reason: {dto.EditReason ?? "Data accuracy alignment"}");
+            await DocumentWorkflowService.SaveAtomicAsync(_context);
+
+            return Ok(DocumentDto.From(doc));
+        }
+
+        [HttpPost("{id}/reanalyze")]
+        [Authorize(Roles = Roles.Submitters)]
+        public async Task<ActionResult<DocumentDto>> ReAnalyzeDocument(Guid id)
+        {
+            var doc = await DocumentsWithChildren().FirstOrDefaultAsync(d => d.Id == id);
+            if (doc == null) return NotFound(new { message = $"Document with ID {id} not found." });
+
+            if (DocStatus.IsTerminal(doc.Status))
+            {
+                throw new InvalidOperationException($"Document {doc.DocumentNumber} is '{doc.Status}' and can no longer be re-analyzed.");
+            }
+
+            var expectedTax = Math.Round(doc.SubTotal * (doc.TaxRate / 100.0m), 2);
+            var isDiscrepancy = Math.Abs(doc.TaxAmount - expectedTax) > 0.05m;
+
+            doc.AiAnomalyDetected = isDiscrepancy;
+            doc.AiAnomalyNotes = isDiscrepancy
+                ? $"Tax calculation discrepancy: Stated {doc.TaxAmount:N2}, expected {expectedTax:N2} based on {doc.TaxRate}% rate."
+                : null;
+            doc.AiConfidenceScore = isDiscrepancy ? 0.85 : 0.98;
+            doc.UpdatedAt = DateTime.UtcNow;
+
+            await _auditService.StageAsync(doc.Id, doc.DocumentNumber, "ReAnalyzed", "sys-gemini-ai", "Gemini AI Engine", "AI Service",
+                $"Re-analysis completed. Anomaly status: {(isDiscrepancy ? "FLAGGED" : "CLEAN")}. Requested by {User.Identity?.Name}.");
+            await DocumentWorkflowService.SaveAtomicAsync(_context);
+
+            return Ok(DocumentDto.From(doc));
+        }
+
+        private static Document BuildDocument(GeminiExtractionResult ai, string docNumber, ActorContext actor)
+        {
             var docId = Guid.NewGuid();
-            var docNumber = string.IsNullOrWhiteSpace(aiResult.DocumentNumber) ? $"DOC-{new Random().Next(1000, 9999)}" : aiResult.DocumentNumber;
-
+            var now = DateTime.UtcNow;
             var document = new Document
             {
                 Id = docId,
                 DocumentNumber = docNumber,
-                DocumentType = aiResult.DocumentType ?? "Invoice",
-                OriginalFileName = file.FileName,
-                StoredFilePath = uniqueFileName,
-                ContentType = file.ContentType,
-                FileSizeBytes = file.Length,
-                VendorName = string.IsNullOrWhiteSpace(aiResult.VendorName) ? "Unspecified Vendor" : aiResult.VendorName,
-                CustomerName = string.IsNullOrWhiteSpace(aiResult.CustomerName) ? "Enterprise Global Corp" : aiResult.CustomerName,
-                TaxId = aiResult.TaxId,
-                IssueDate = aiResult.IssueDate ?? DateTime.UtcNow,
-                DueDate = aiResult.DueDate ?? DateTime.UtcNow.AddDays(30),
-                SubTotal = aiResult.SubTotal,
-                TaxRate = aiResult.TaxRate,
-                TaxAmount = aiResult.TaxAmount,
-                TotalAmount = aiResult.TotalAmount,
-                Currency = string.IsNullOrWhiteSpace(aiResult.Currency) ? "USD" : aiResult.Currency,
-                Status = "PendingLevel1",
+                DocumentType = string.IsNullOrWhiteSpace(ai.DocumentType) ? "Invoice" : ai.DocumentType,
+                VendorName = string.IsNullOrWhiteSpace(ai.VendorName) ? "Unspecified Vendor" : ai.VendorName,
+                CustomerName = string.IsNullOrWhiteSpace(ai.CustomerName) ? "Enterprise Global Corp" : ai.CustomerName,
+                TaxId = ai.TaxId,
+                IssueDate = ai.IssueDate ?? now,
+                DueDate = ai.DueDate ?? now.AddDays(30),
+                SubTotal = ai.SubTotal,
+                TaxRate = ai.TaxRate,
+                TaxAmount = ai.TaxAmount,
+                TotalAmount = ai.TotalAmount,
+                Currency = string.IsNullOrWhiteSpace(ai.Currency) ? "USD" : ai.Currency,
+                Status = DocStatus.PendingLevel1,
                 CurrentApprovalLevel = 1,
                 TotalApprovalLevels = 2,
-                AiSummary = aiResult.ExecutiveSummary,
-                AiAnomalyDetected = aiResult.AnomalyDetected,
-                AiAnomalyNotes = aiResult.AnomalyNotes,
-                AiConfidenceScore = aiResult.ConfidenceScore > 0 ? aiResult.ConfidenceScore : 0.95,
-                UploadedByUserId = userId,
-                UploadedByUserName = userName,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                AiSummary = ai.ExecutiveSummary,
+                AiAnomalyDetected = ai.AnomalyDetected,
+                AiAnomalyNotes = ai.AnomalyNotes,
+                AiConfidenceScore = ai.ConfidenceScore > 0 ? ai.ConfidenceScore : 0.95,
+                UploadedByUserId = actor.Id,
+                UploadedByUserName = actor.Name,
+                CreatedAt = now,
+                UpdatedAt = now
             };
 
-            // Add line items
-            if (aiResult.LineItems != null && aiResult.LineItems.Any())
+            if (ai.LineItems != null && ai.LineItems.Any())
             {
-                foreach (var item in aiResult.LineItems)
+                foreach (var item in ai.LineItems)
                 {
                     document.LineItems.Add(new DocumentLineItem
                     {
@@ -168,286 +326,23 @@ namespace AiDocumentWorkflow.Api.Controllers
                     DocumentId = docId,
                     Description = "Extracted Line Items Summary",
                     Quantity = 1,
-                    UnitPrice = aiResult.SubTotal,
-                    Amount = aiResult.SubTotal
+                    UnitPrice = ai.SubTotal,
+                    Amount = ai.SubTotal
                 });
             }
 
-            // Setup 2-tier approval workflow
-            document.ApprovalSteps.Add(new ApprovalStep
-            {
-                DocumentId = docId,
-                StepNumber = 1,
-                RoleRequired = "Manager",
-                Title = "Department Manager Review",
-                Status = "Pending"
-            });
-
-            document.ApprovalSteps.Add(new ApprovalStep
-            {
-                DocumentId = docId,
-                StepNumber = 2,
-                RoleRequired = "Finance",
-                Title = "Finance Controller Approval",
-                Status = "Pending"
-            });
-
-            _context.Documents.Add(document);
-            await _context.SaveChangesAsync();
-
-            // Log upload and AI analysis
-            await _auditService.LogAsync(
-                docId,
-                docNumber,
-                "Uploaded",
-                userId,
-                userName,
-                "Staff",
-                $"Document '{file.FileName}' uploaded and initialized in multi-level workflow queue."
-            );
-
-            var anomalyDetail = aiResult.AnomalyDetected 
-                ? $"ANOMALY DETECTED: {aiResult.AnomalyNotes}" 
-                : $"All fields validated cleanly. Confidence: {document.AiConfidenceScore:P0}.";
-
-            await _auditService.LogAsync(
-                docId,
-                docNumber,
-                "AiAnalyzed",
-                "sys-gemini-ai",
-                "Gemini AI Engine",
-                "AI Service",
-                $"Automated extraction completed. {anomalyDetail}"
-            );
-
-            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, document);
+            document.ApprovalSteps.Add(new ApprovalStep { DocumentId = docId, StepNumber = 1, RoleRequired = Roles.Manager, Title = "Department Manager Review", Status = "Pending" });
+            document.ApprovalSteps.Add(new ApprovalStep { DocumentId = docId, StepNumber = 2, RoleRequired = Roles.Finance, Title = "Finance Controller Approval", Status = "Pending" });
+            return document;
         }
 
-        [HttpPost("preset/{presetType}")]
-        public async Task<ActionResult<Document>> CreatePresetDocument(string presetType, [FromQuery] string? userId, [FromQuery] string? userName)
+        private Task StageAiLog(Document document, GeminiExtractionResult ai, string anomalyPrefix, string cleanText)
         {
-            var uId = userId ?? "usr-staff-01";
-            var uName = userName ?? "Elena Vance (Staff)";
-
-            var aiResult = await _geminiService.GenerateMockPresetAsync(presetType);
-
-            var docId = Guid.NewGuid();
-            var docNumber = aiResult.DocumentNumber;
-
-            var document = new Document
-            {
-                Id = docId,
-                DocumentNumber = docNumber,
-                DocumentType = aiResult.DocumentType,
-                OriginalFileName = $"{docNumber.Replace('-', '_')}_preset.pdf",
-                StoredFilePath = null,
-                ContentType = "application/pdf",
-                FileSizeBytes = 124800,
-                VendorName = aiResult.VendorName,
-                CustomerName = aiResult.CustomerName,
-                TaxId = aiResult.TaxId,
-                IssueDate = aiResult.IssueDate,
-                DueDate = aiResult.DueDate,
-                SubTotal = aiResult.SubTotal,
-                TaxRate = aiResult.TaxRate,
-                TaxAmount = aiResult.TaxAmount,
-                TotalAmount = aiResult.TotalAmount,
-                Currency = aiResult.Currency,
-                Status = "PendingLevel1",
-                CurrentApprovalLevel = 1,
-                TotalApprovalLevels = 2,
-                AiSummary = aiResult.ExecutiveSummary,
-                AiAnomalyDetected = aiResult.AnomalyDetected,
-                AiAnomalyNotes = aiResult.AnomalyNotes,
-                AiConfidenceScore = aiResult.ConfidenceScore,
-                UploadedByUserId = uId,
-                UploadedByUserName = uName,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            foreach (var item in aiResult.LineItems)
-            {
-                document.LineItems.Add(new DocumentLineItem
-                {
-                    DocumentId = docId,
-                    Description = item.Description,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
-                    Amount = item.Amount
-                });
-            }
-
-            document.ApprovalSteps.Add(new ApprovalStep
-            {
-                DocumentId = docId,
-                StepNumber = 1,
-                RoleRequired = "Manager",
-                Title = "Department Manager Review",
-                Status = "Pending"
-            });
-
-            document.ApprovalSteps.Add(new ApprovalStep
-            {
-                DocumentId = docId,
-                StepNumber = 2,
-                RoleRequired = "Finance",
-                Title = "Finance Controller Approval",
-                Status = "Pending"
-            });
-
-            _context.Documents.Add(document);
-            await _context.SaveChangesAsync();
-
-            await _auditService.LogAsync(
-                docId,
-                docNumber,
-                "Uploaded",
-                uId,
-                uName,
-                "Staff",
-                $"Sample enterprise document preset '{presetType}' initialized."
-            );
-
-            var anomalyDetail = aiResult.AnomalyDetected 
-                ? $"ANOMALY FLAGGED: {aiResult.AnomalyNotes}" 
-                : $"Automated extraction completed without discrepancies. Confidence: {document.AiConfidenceScore:P0}.";
-
-            await _auditService.LogAsync(
-                docId,
-                docNumber,
-                "AiAnalyzed",
-                "sys-gemini-ai",
-                "Gemini AI Engine",
-                "AI Service",
-                anomalyDetail
-            );
-
-            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, document);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<Document>> UpdateDocument(Guid id, [FromBody] UpdateDocumentDto dto)
-        {
-            var doc = await _context.Documents
-                .Include(d => d.LineItems)
-                .Include(d => d.ApprovalSteps)
-                .FirstOrDefaultAsync(d => d.Id == id);
-
-            if (doc == null)
-            {
-                return NotFound(new { message = $"Document with ID {id} not found." });
-            }
-
-            var actorId = dto.ActorId ?? "usr-staff-01";
-            var actorName = dto.ActorName ?? "Elena Vance";
-            var actorRole = dto.ActorRole ?? "Staff";
-
-            if (string.Equals(actorRole, "Auditor", StringComparison.OrdinalIgnoreCase))
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = "Auditor role has strictly read-only forensic access and is prohibited from editing document fields." });
-            }
-
-            var changesList = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(dto.DocumentNumber) && dto.DocumentNumber != doc.DocumentNumber)
-            {
-                changesList.Add($"Document Number: '{doc.DocumentNumber}' -> '{dto.DocumentNumber}'");
-                doc.DocumentNumber = dto.DocumentNumber;
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.VendorName) && dto.VendorName != doc.VendorName)
-            {
-                changesList.Add($"Vendor: '{doc.VendorName}' -> '{dto.VendorName}'");
-                doc.VendorName = dto.VendorName;
-            }
-
-            if (dto.TotalAmount != doc.TotalAmount)
-            {
-                changesList.Add($"Total Amount: {doc.Currency} {doc.TotalAmount:N2} -> {doc.Currency} {dto.TotalAmount:N2}");
-                doc.TotalAmount = dto.TotalAmount;
-            }
-
-            if (dto.SubTotal != doc.SubTotal)
-            {
-                doc.SubTotal = dto.SubTotal;
-            }
-
-            if (dto.TaxAmount != doc.TaxAmount)
-            {
-                changesList.Add($"Tax Amount: {doc.Currency} {doc.TaxAmount:N2} -> {doc.Currency} {dto.TaxAmount:N2}");
-                doc.TaxAmount = dto.TaxAmount;
-            }
-
-            if (dto.TaxRate != doc.TaxRate)
-            {
-                doc.TaxRate = dto.TaxRate;
-            }
-
-            if (dto.IssueDate.HasValue) doc.IssueDate = dto.IssueDate.Value;
-            if (dto.DueDate.HasValue) doc.DueDate = dto.DueDate.Value;
-            if (!string.IsNullOrWhiteSpace(dto.TaxId)) doc.TaxId = dto.TaxId;
-
-            // Recheck anomaly if tax was corrected
-            var calculatedTax = Math.Round(doc.SubTotal * (doc.TaxRate / 100.0m), 2);
-            if (Math.Abs(doc.TaxAmount - calculatedTax) <= 0.05m && doc.AiAnomalyDetected)
-            {
-                doc.AiAnomalyDetected = false;
-                doc.AiAnomalyNotes = "Previously flagged tax anomaly was manually reviewed and verified by user.";
-                changesList.Add("Anomaly resolved via user manual reconciliation.");
-            }
-
-            doc.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            var diffSummary = changesList.Any() 
-                ? string.Join("; ", changesList) 
-                : "Fields updated without major variance.";
-
-            await _auditService.LogAsync(
-                doc.Id,
-                doc.DocumentNumber,
-                "FieldEdited",
-                actorId,
-                actorName,
-                actorRole,
-                $"Manual field correction: {diffSummary}. Reason: {dto.EditReason ?? "Data accuracy alignment"}"
-            );
-
-            return Ok(doc);
-        }
-
-        [HttpPost("{id}/reanalyze")]
-        public async Task<ActionResult<Document>> ReAnalyzeDocument(Guid id)
-        {
-            var doc = await _context.Documents.FirstOrDefaultAsync(d => d.Id == id);
-            if (doc == null) return NotFound();
-
-            // Re-check math
-            var expectedTax = Math.Round(doc.SubTotal * (doc.TaxRate / 100.0m), 2);
-            var isDiscrepancy = Math.Abs(doc.TaxAmount - expectedTax) > 0.05m;
-
-            doc.AiAnomalyDetected = isDiscrepancy;
-            doc.AiAnomalyNotes = isDiscrepancy 
-                ? $"Tax calculation discrepancy: Stated {doc.TaxAmount:N2}, expected {expectedTax:N2} based on {doc.TaxRate}% rate."
-                : null;
-            doc.AiConfidenceScore = isDiscrepancy ? 0.85 : 0.98;
-            doc.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            await _auditService.LogAsync(
-                doc.Id,
-                doc.DocumentNumber,
-                "ReAnalyzed",
-                "sys-gemini-ai",
-                "Gemini AI Engine",
-                "AI Service",
-                $"Re-analysis completed. Anomaly status: {(isDiscrepancy ? "FLAGGED" : "CLEAN")}."
-            );
-
-            return Ok(doc);
+            var detail = ai.AnomalyDetected
+                ? $"{anomalyPrefix}: {ai.AnomalyNotes}"
+                : $"{cleanText}. Confidence: {document.AiConfidenceScore:P0}.";
+            return _auditService.StageAsync(document.Id, document.DocumentNumber, "AiAnalyzed", "sys-gemini-ai", "Gemini AI Engine", "AI Service",
+                $"Automated extraction completed. {detail}");
         }
     }
 }

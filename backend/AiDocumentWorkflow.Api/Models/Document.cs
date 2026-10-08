@@ -40,6 +40,9 @@ namespace AiDocumentWorkflow.Api.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        /// <summary>Optimistic concurrency token, bumped on every update of the document row.</summary>
+        public int Version { get; set; }
+
         public List<DocumentLineItem> LineItems { get; set; } = new();
         public List<ApprovalStep> ApprovalSteps { get; set; } = new();
         [JsonIgnore]

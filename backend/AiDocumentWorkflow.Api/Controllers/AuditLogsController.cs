@@ -4,7 +4,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using AiDocumentWorkflow.Api.Data;
 using AiDocumentWorkflow.Api.Models;
@@ -13,6 +15,7 @@ using AiDocumentWorkflow.Api.Services;
 namespace AiDocumentWorkflow.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class AuditLogsController : ControllerBase
     {
@@ -26,6 +29,12 @@ namespace AiDocumentWorkflow.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AuditLog>>> GetLogs([FromQuery] Guid? documentId, [FromQuery] string? search)
         {
+            // The full ledger is for governance roles; Staff may only read the history of a single document.
+            if (!documentId.HasValue && !Roles.LedgerReaders.Split(',').Any(User.IsInRole))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "Your role may only view the audit history of a single document." });
+            }
+
             var query = _context.AuditLogs.AsQueryable();
 
             if (documentId.HasValue)
@@ -42,14 +51,15 @@ namespace AiDocumentWorkflow.Api.Controllers
                                          a.Details.ToLower().Contains(s));
             }
 
-            var logs = await query.OrderByDescending(a => a.Timestamp).Take(100).ToListAsync();
+            var logs = await query.OrderByDescending(a => a.Sequence).Take(100).ToListAsync();
             return Ok(logs);
         }
 
         [HttpGet("verify-integrity")]
+        [Authorize(Roles = Roles.LedgerReaders)]
         public async Task<ActionResult> VerifyIntegrity()
         {
-            var logs = await _context.AuditLogs.OrderBy(a => a.Timestamp).ToListAsync();
+            var logs = await _context.AuditLogs.OrderBy(a => a.Sequence).ToListAsync();
             if (!logs.Any())
             {
                 return Ok(new 
@@ -94,6 +104,7 @@ namespace AiDocumentWorkflow.Api.Controllers
                         log.DocumentNumber,
                         log.Action,
                         log.ActorId,
+                        log.ActorName,
                         log.ActorRole,
                         log.Details,
                         log.PreviousValue,
