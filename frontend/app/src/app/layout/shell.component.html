@@ -1,0 +1,66 @@
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="frame">
+  <aside class="side">
+    <a class="brand" routerLink="/inbox" aria-label="AegisFlow home">
+      <app-icon name="shield" [size]="22" />
+      <span>AegisFlow</span>
+    </a>
+
+    <nav aria-label="Main">
+      <a routerLink="/inbox" routerLinkActive="active"
+        ><app-icon name="inbox" /> <span>Inbox</span></a
+      >
+      @if (showUpload()) {
+        <a routerLink="/upload" routerLinkActive="active"
+          ><app-icon name="upload" /> <span>Upload</span></a
+        >
+      }
+      @if (showAudit()) {
+        <a routerLink="/audit" routerLinkActive="active"
+          ><app-icon name="lock" /> <span>Audit ledger</span></a
+        >
+      }
+    </nav>
+
+    <p class="mode muted">
+      @if (isHttp) {
+        Connected to the .NET API
+      } @else {
+        Browser demo: data stays in this browser
+      }
+    </p>
+  </aside>
+
+  <div class="main-col">
+    <header class="top">
+      <div class="persona">
+        <label for="persona" class="muted">Demo role</label>
+        <select
+          id="persona"
+          class="select"
+          [disabled]="switching()"
+          (change)="changePersona($any($event.target).value)"
+        >
+          @for (p of session.personas; track p.id) {
+            <option [value]="p.id" [selected]="p.id === session.user().id">{{ p.name }} · {{ p.role }}</option>
+          }
+        </select>
+      </div>
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        (click)="theme.toggle()"
+        [attr.aria-label]="
+          theme.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
+        "
+      >
+        <app-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" />
+      </button>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
+</div>

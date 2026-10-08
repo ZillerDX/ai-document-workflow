@@ -1,0 +1,414 @@
+<a class="back" routerLink="/inbox"
+  ><app-icon name="arrow" [size]="14" class="flip" /> Back to inbox</a
+>
+
+@if (loadError(); as message) {
+  <div class="notice notice-danger" role="alert">
+    <app-icon name="alert" />
+    <div class="grow">
+      @if (notFound()) {
+        This document does not exist.
+      } @else {
+        {{ message }}
+      }
+    </div>
+    @if (!notFound()) {
+      <button type="button" class="btn btn-sm" (click)="doc.reload()">Retry</button>
+    }
+  </div>
+} @else if (doc.value(); as d) {
+  <header class="page-head">
+    <div>
+      <div class="row tight">
+        <h1>{{ d.documentNumber }}</h1>
+        <app-status-badge [status]="d.status" />
+        @if (d.aiAnomalyDetected) {
+          <span class="badge badge-warn"><app-icon name="alert" [size]="12" /> Anomaly</span>
+        }
+      </div>
+      <p>{{ typeLabels[d.documentType] }} · {{ d.vendorName }} → {{ d.customerName }}</p>
+    </div>
+    <div class="head-total">
+      <span class="muted small">Total</span>
+      <strong class="total">{{ formatMoney(d.totalAmount, d.currency) }}</strong>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="stack">
+      <section class="card">
+        <div class="card-head"><h2>Approval progress</h2></div>
+        <ol class="steps">
+          @for (s of d.approvalSteps; track s.id) {
+            <li
+              class="step"
+              [class.current]="d.currentApprovalLevel === s.stepNumber && s.status === 'Pending'"
+            >
+              <span class="dot" [class]="'dot s-' + s.status">
+                @if (s.status === 'Approved') {
+                  <app-icon name="check" [size]="14" />
+                } @else if (s.status === 'Rejected') {
+                  <app-icon name="x" [size]="14" />
+                } @else {
+                  {{ s.stepNumber }}
+                }
+              </span>
+              <div>
+                <strong>{{ s.title }}</strong>
+                <div class="muted small">
+                  @if (s.decidedAt) {
+                    {{
+                      s.status === 'Approved'
+                        ? 'Approved'
+                        : s.status === 'Rejected'
+                          ? 'Rejected'
+                          : 'Revision requested'
+                    }}
+                    by {{ s.approverUserName }} · {{ formatDateTime(s.decidedAt) }}
+                  } @else {
+                    Requires {{ s.roleRequired }}
+                  }
+                </div>
+                @if (s.comment && s.decidedAt) {
+                  <blockquote>{{ s.comment }}</blockquote>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>AI analysis</h2>
+          <span class="spacer"></span>
+          <span class="muted small">Confidence {{ (d.aiConfidenceScore * 100).toFixed(0) }}%</span>
+          @if (reanalyzeRule().allowed) {
+            <button type="button" class="btn btn-sm" [disabled]="busy()" (click)="reanalyzeDoc()">
+              <app-icon name="refresh" [size]="14" /> Re-analyze
+            </button>
+          }
+        </div>
+        <div class="card-body stack tight-stack">
+          @if (d.aiSummary) {
+            <p>{{ d.aiSummary }}</p>
+          }
+          @if (d.aiAnomalyDetected) {
+            <div class="notice notice-warn" role="note">
+              <app-icon name="alert" />
+              <div>
+                <strong>Anomaly flagged</strong>
+                <div>{{ d.aiAnomalyNotes }}</div>
+                @if (mismatch() !== 0) {
+                  <div class="small muted">
+                    Stated tax differs from {{ d.taxRate }}% of the subtotal by
+                    {{ formatMoney(mismatch(), d.currency) }}.
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="notice notice-ok" role="note">
+              <app-icon name="check" /> No anomalies detected.
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Details</h2>
+          <span class="spacer"></span>
+          @if (d.fileUrl) {
+            <a class="btn btn-sm" [href]="d.fileUrl" target="_blank" rel="noopener"
+              ><app-icon name="external" [size]="14" /> Open original</a
+            >
+          }
+          @if (edit().allowed && !draft()) {
+            <button type="button" class="btn btn-sm" (click)="startEdit()">
+              <app-icon name="edit" [size]="14" /> Correct fields
+            </button>
+          }
+        </div>
+
+        @if (draft(); as f) {
+          <form class="card-body form-grid" (submit)="$event.preventDefault(); saveEdit()">
+            <div class="field">
+              <label for="f-num">Document number</label>
+              <input
+                id="f-num"
+                class="input"
+                [value]="f.documentNumber"
+                (input)="setDraft('documentNumber', $event)"
+              />
+            </div>
+            <div class="field">
+              <label for="f-vendor">Vendor</label>
+              <input
+                id="f-vendor"
+                class="input"
+                [value]="f.vendorName"
+                (input)="setDraft('vendorName', $event)"
+              />
+            </div>
+            <div class="field">
+              <label for="f-tax-id">Tax ID</label>
+              <input
+                id="f-tax-id"
+                class="input"
+                [value]="f.taxId"
+                (input)="setDraft('taxId', $event)"
+              />
+            </div>
+            <div class="field">
+              <label for="f-sub">Subtotal</label>
+              <input
+                id="f-sub"
+                class="input"
+                type="number"
+                min="0"
+                step="0.01"
+                [value]="f.subTotal"
+                (input)="setDraft('subTotal', $event)"
+              />
+            </div>
+            <div class="field">
+              <label for="f-rate">Tax rate (%)</label>
+              <input
+                id="f-rate"
+                class="input"
+                type="number"
+                min="0"
+                step="0.01"
+                [value]="f.taxRate"
+                (input)="setDraft('taxRate', $event)"
+              />
+            </div>
+            <div class="field">
+              <label for="f-tax">Tax amount</label>
+              <input
+                id="f-tax"
+                class="input"
+                type="number"
+                min="0"
+                step="0.01"
+                [value]="f.taxAmount"
+                (input)="setDraft('taxAmount', $event)"
+              />
+            </div>
+            <div class="field">
+              <label for="f-total">Total</label>
+              <input
+                id="f-total"
+                class="input"
+                type="number"
+                min="0"
+                step="0.01"
+                [value]="f.totalAmount"
+                (input)="setDraft('totalAmount', $event)"
+              />
+            </div>
+            <div class="field wide">
+              <label for="f-reason">Reason for the change</label>
+              <input
+                id="f-reason"
+                class="input"
+                [value]="f.editReason"
+                (input)="setDraft('editReason', $event)"
+                placeholder="Recorded in the audit history"
+              />
+            </div>
+            <div class="row wide">
+              <button type="submit" class="btn btn-primary" [disabled]="busy()">
+                Save changes
+              </button>
+              <button type="button" class="btn" [disabled]="busy()" (click)="cancelEdit()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        } @else {
+          <dl class="facts">
+            <div>
+              <dt>Vendor</dt>
+              <dd>{{ d.vendorName }}</dd>
+            </div>
+            <div>
+              <dt>Customer</dt>
+              <dd>{{ d.customerName }}</dd>
+            </div>
+            <div>
+              <dt>Tax ID</dt>
+              <dd>{{ d.taxId || '–' }}</dd>
+            </div>
+            <div>
+              <dt>Issued</dt>
+              <dd>{{ formatDate(d.issueDate) }}</dd>
+            </div>
+            <div>
+              <dt>Due</dt>
+              <dd>{{ formatDate(d.dueDate) }}</dd>
+            </div>
+            <div>
+              <dt>Submitted by</dt>
+              <dd>{{ d.uploadedByUserName }}</dd>
+            </div>
+            <div>
+              <dt>Subtotal</dt>
+              <dd class="num">{{ formatMoney(d.subTotal, d.currency) }}</dd>
+            </div>
+            <div>
+              <dt>Tax ({{ d.taxRate }}%)</dt>
+              <dd class="num">{{ formatMoney(d.taxAmount, d.currency) }}</dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd class="num strong">{{ formatMoney(d.totalAmount, d.currency) }}</dd>
+            </div>
+            <div>
+              <dt>File</dt>
+              <dd>{{ d.originalFileName }} · {{ formatBytes(d.fileSizeBytes) }}</dd>
+            </div>
+          </dl>
+          @if (!edit().allowed && session.user().role === 'Staff') {
+            <p class="card-body muted small">
+              <app-icon name="lock" [size]="13" /> {{ edit().reason }}
+            </p>
+          }
+        }
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Line items</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th class="num">Qty</th>
+                <th class="num">Unit price</th>
+                <th class="num">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (li of d.lineItems; track li.id) {
+                <tr>
+                  <td>{{ li.description }}</td>
+                  <td class="num">{{ li.quantity }}</td>
+                  <td class="num">{{ formatMoney(li.unitPrice, d.currency) }}</td>
+                  <td class="num">{{ formatMoney(li.amount, d.currency) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>History</h2></div>
+        <div class="card-body">
+          @if (logs.value(); as list) {
+            @if (list.length === 0) {
+              <p class="muted">No events recorded yet.</p>
+            } @else {
+              <ol class="timeline">
+                @for (l of list; track l.id) {
+                  <li>
+                    <div class="row tight">
+                      <strong>{{ actionLabel(l.action) }}</strong>
+                      <span class="muted small"
+                        >{{ l.actorName }} · {{ l.actorRole }} ·
+                        {{ formatDateTime(l.timestamp) }}</span
+                      >
+                    </div>
+                    <div class="small">{{ l.details }}</div>
+                    @if (l.recordHash) {
+                      <div class="mono muted small" [title]="l.recordHash">
+                        #{{ l.sequence ?? '' }} {{ shortHash(l.recordHash) }}
+                      </div>
+                    }
+                  </li>
+                }
+              </ol>
+            }
+          } @else if (logs.error()) {
+            <p class="muted">History is not available for your role.</p>
+          } @else {
+            <div class="skeleton" style="height: 48px"></div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <aside class="actions">
+      <section class="card sticky">
+        <div class="card-head"><h2>Your action</h2></div>
+        <div class="card-body stack tight-stack">
+          @if (decision().allowed || resubmit().allowed) {
+            <div class="field">
+              <label for="comment">
+                @if (resubmit().allowed) {
+                  Note for the reviewer (optional)
+                } @else {
+                  Comment (required to reject or request a revision)
+                }
+              </label>
+              <textarea
+                id="comment"
+                class="textarea"
+                [value]="comment()"
+                (input)="comment.set($any($event.target).value)"
+              ></textarea>
+            </div>
+            @if (resubmit().allowed) {
+              <button
+                type="button"
+                class="btn btn-primary btn-block"
+                [disabled]="busy()"
+                (click)="act('Resubmit')"
+              >
+                Resubmit for review
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-primary btn-block"
+                [disabled]="busy()"
+                (click)="act('Approve')"
+              >
+                <app-icon name="check" /> Approve level {{ d.currentApprovalLevel }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-block"
+                [disabled]="busy()"
+                (click)="act('RequestRevision')"
+              >
+                Request revision
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger btn-block"
+                [disabled]="busy()"
+                (click)="act('Reject')"
+              >
+                Reject
+              </button>
+            }
+          } @else {
+            <div class="notice" role="note">
+              <app-icon name="lock" />
+              <span>{{ blockedReason() ?? 'No action is available for you.' }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    </aside>
+  </div>
+} @else {
+  <div class="stack" aria-busy="true">
+    <div class="skeleton" style="height: 56px"></div>
+    <div class="skeleton" style="height: 160px"></div>
+    <div class="skeleton" style="height: 240px"></div>
+  </div>
+}

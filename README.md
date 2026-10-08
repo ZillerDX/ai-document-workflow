@@ -2,46 +2,46 @@
 
 [![Live Demo on GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://zillerdx.github.io/ai-document-workflow/)
 [![CI Verification](https://img.shields.io/badge/CI%20Verification-Passing%20(100%25)-success?style=for-the-badge&logo=githubactions)](https://github.com/ZillerDX/ai-document-workflow/actions)
-[![Angular](https://img.shields.io/badge/Angular-19-dd0031?style=for-the-badge&logo=angular)](https://angular.dev/)
+[![Angular](https://img.shields.io/badge/Angular-22-dd0031?style=for-the-badge&logo=angular)](https://angular.dev/)
 [![.NET](https://img.shields.io/badge/.NET-10.0%20LTS-512bd4?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
-[![Tests](https://img.shields.io/badge/xUnit%20Tests-7%2F7%20Passed-brightgreen?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
+[![Tests](https://img.shields.io/badge/Tests-24%20xUnit%20%2B%2019%20Vitest-brightgreen?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
 [![Audit Trail](https://img.shields.io/badge/Audit%20Ledger-SHA--256%20Chained-0052cc?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 [![Zero-Leak](https://img.shields.io/badge/Security-Zero%20Secrets%20Exposed-success?style=for-the-badge)](https://github.com/ZillerDX/ai-document-workflow)
 
 > **🚀 Live Interactive Web Demo**: [https://zillerdx.github.io/ai-document-workflow/](https://zillerdx.github.io/ai-document-workflow/)
 > 
-> Enterprise-grade document lifecycle automation, multimodal AI compliance verification, and multi-tier approval system built with strict **Segregation of Duties (SoD)** and **tamper-evident SHA-256 cryptographic audit chaining**.
+> Enterprise-grade document lifecycle automation, multimodal AI compliance verification, and multi-tier approval system built with strict **Segregation of Duties (SoD)** and **SHA-256 hash-chained audit logging**. In .NET API mode the server derives identity from a signed token and owns the ledger; the static browser demo enforces the same rules client-side but its chain is only a demonstration (anyone controlling the browser can rewrite it).
 
 ---
 
 ## 📸 Visual Showcase & Architectural Highlights
 
-### 1. Executive Operations Dashboard in Clean Light Mode (with Instant Dark Mode Toggle)
-High-density financial operations dashboard with real-time KPI metrics, streamlined role selection, smart queue tabs, single-line 52px table rows, and instant Sun/Moon theme toggling.
-![Hero Executive Dashboard in Light Mode](docs/assets/screenshots/hero_dashboard_light_mode.png)
+### 1. Role-based inbox
+The inbox opens on "Needs my action" for the current role, with compact KPIs, queue tabs, search and a type filter. Here: Manager (Sarah Connor) with two documents waiting for a Level 1 decision.
+![Role-based inbox](docs/assets/screenshots/hero_dashboard_light_mode.png)
 
 ---
 
-### 2. Deep Multimodal AI Audit & "Open Original File" Modal
-Itemized invoice breakdown, Gemini multimodal OCR extraction, tax calculation mismatch anomaly alert (15% billed vs 7% statutory), and direct access to open the original source PDF.
-![Document Detail Modal with AI Anomaly](docs/assets/screenshots/document_detail_tax_anomaly.png)
+### 2. Document page with AI anomaly
+One page per document: approval progress, AI analysis (the tax mismatch is flagged: 15% billed vs 7% statutory), details with inline correction, line items and history. The action panel on the right holds the decision.
+![Document page with AI anomaly](docs/assets/screenshots/document_detail_tax_anomaly.png)
 
 ---
 
-### 3. Strict Segregation of Duties (SoD) — Manager L1 Review View
-When switched to Manager (Sarah Connor), the interface dynamically adapts with role boundaries, pending spend metrics ($25,410.00), and contextual `Action Required` / `Review L1` approval triggers.
-![Segregation of Duties Manager View](docs/assets/screenshots/segregation_of_duties_manager.png)
+### 3. Segregation of Duties explained in the UI
+A user who may not act sees why instead of disabled buttons. Here: Finance (David Sterling) opens a document still waiting for Level 1. The server enforces the same rules, so the UI is a convenience, not the control.
+![Segregation of duties](docs/assets/screenshots/segregation_of_duties_manager.png)
 
 ---
 
-### 4. Cryptographic Audit & Compliance Ledger (SHA-256 Hash Chain)
-End-to-end forward-chained block ledger (`previousHash` $\to$ `recordHash`). Click "Verify Cryptographic Chain" to confirm 100% tamper-free integrity from genesis to head.
-![Cryptographic Audit Ledger](docs/assets/screenshots/cryptographic_audit_ledger.png)
+### 4. Audit ledger and chain verification (dark theme)
+Every upload, edit and decision is chained (`previousHash` to `recordHash`). Verifying walks the chain from genesis to head. In .NET API mode the server owns the ledger; the browser-only demo computes it client-side and shows a warning that it can be rewritten.
+![Audit ledger](docs/assets/screenshots/cryptographic_audit_ledger.png)
 
 ---
 
 ### 5. Defensive Responsive Design (Tablet Viewport 768px)
-Fluid auto-wrapping KPI cards, clean typography, and horizontal scroll containment on compact displays.
+The shell collapses to a top bar and the content reflows without horizontal page scroll (also checked at 375px).
 ![Responsive Tablet](docs/assets/screenshots/workflow_responsive_tablet.png)
 
 ---
@@ -80,7 +80,7 @@ AegisFlow AI enforces an autonomous, end-to-end multi-tier pipeline:
 
 ```mermaid
 graph LR
-    subgraph Frontend["Frontend Client (Angular 19)"]
+    subgraph Frontend["Frontend Client (Angular 22)"]
         UI["Standalone Single-File Components"]
         SIG["Angular Signals State"]
         CRYPTO["Web Crypto API SHA-256"]
@@ -101,7 +101,7 @@ graph LR
     API --> AI
 ```
 
-- **Frontend**: Angular 19 (Standalone Single-File Components, Signals, Native Web Crypto API, Lucide Icons).
+- **Frontend**: Angular 22 (standalone components, signals, zoneless, lazy routes, Vitest, native Web Crypto API).
 - **Backend**: .NET 10 LTS Minimal API, C# 14, Entity Framework Core 10, SQLite.
 - **AI Engine**: Google Gemini 2.5 Flash Multimodal Vision & OCR.
 - **Quality & Verification**: xUnit (.NET 10), Playwright Headless Visual Testing, GitHub Actions CI.
@@ -268,15 +268,16 @@ When running in **Enterprise Backend Mode**, the .NET 10 LTS API exposes the fol
 ### Option 2: Local Development
 
 #### Prerequisites
-- Node.js 20+
+- Node.js 22.22+ or 24.15+
 - .NET 10 LTS SDK
 
-#### 1. Frontend Client (Angular 19)
+#### 1. Frontend Client (Angular 22)
 ```powershell
-cd frontend/client
-npm install
-npm start
-# Available at http://localhost:4280 or http://localhost:4200
+cd frontend/app
+npm ci
+npm start                                # browser-only demo, http://localhost:4200
+npm start -- --configuration http        # talks to the .NET API at http://localhost:5120
+npm test                                 # Vitest unit tests
 ```
 
 #### 2. Backend Service (.NET 10 LTS)
@@ -284,21 +285,29 @@ npm start
 cd backend/AiDocumentWorkflow.Api
 dotnet restore
 dotnet run
-# API listens on http://localhost:5120
+# API listens on http://localhost:5120 (Development: demo login enabled, random per-run JWT key)
 ```
 
 #### 3. Run Automated Tests (.NET xUnit)
 ```powershell
 dotnet test backend/AiDocumentWorkflow.Tests --nologo -v q
-# Result: Passed! Total: 7, Passed: 7, Failed: 0
+# All xUnit tests pass (workflow rules, Segregation of Duties, audit chain, concurrency)
 ```
 
 ### Option 3: Docker Container Orchestration
 ```powershell
-# Build and run backend container
+# Copy .env.example to .env and set AUTH_JWT_KEY (>= 32 chars) first
 docker-compose up --build -d
 # API is live at http://localhost:5120
 ```
+
+### Security model (read before deploying)
+- **Demo login is not authentication.** `POST /api/auth/demo-login` issues a JWT for one of four seeded personas so the role-based workflow can be demonstrated. Set `Auth__EnableDemoLogin=false` and put a real identity provider in front of the API before any real use.
+- The API never trusts a role or user id from a request body; both come from the token. Staff uploads and corrects fields, Manager decides Level 1, Finance decides Level 2, Auditor is read-only.
+- Segregation of duties is enforced server-side: the submitter cannot decide their own document and one person cannot decide both levels. Fields are locked once Level 1 is decided.
+- `Auth__JwtKey` (>= 32 chars) must be set outside Development; CORS origins come from `Cors__AllowedOrigins`.
+- Uploaded documents are sent to the Gemini API when `Gemini__ApiKey` is configured. Do not upload confidential files unless that is acceptable.
+- The browser-only demo stores data in `localStorage` and enforces the same rules in the client. That is a convenience, not a security boundary.
 
 ---
 
@@ -308,7 +317,7 @@ docker-compose up --build -d
 ai-document-workflow/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                      # Enterprise CI: Secret scan, .NET 10 LTS xUnit tests, Angular build
+│       └── ci.yml                      # CI: Secret scan, .NET 10 LTS xUnit tests, Angular 22 build + Vitest
 ├── .gitignore                          # Excludes build outputs, local DBs, and private secrets
 ├── CONTEXT.md                          # Domain contracts, state transitions, and entity specifications
 ├── README.md                           # Master portfolio documentation (7 Product Pillars)
@@ -324,39 +333,30 @@ ai-document-workflow/
 │   └── Sample_3_Quotation_GPU_Cluster.pdf  # Quotation for AI GPU cluster ($8,346.00)
 │
 ├── frontend/
-│   └── client/                         # Angular 19 Standalone Single-File Component Architecture
-│       ├── angular.json                # Workspace build configuration (budgets, assets, baseHref)
-│       ├── package.json                # Angular 19, Lucide Icons, TypeScript dependencies
-│       ├── tsconfig.json               # Modern ES2022 TypeScript configuration
-│       ├── serve-spa.js                # Local zero-dependency SPA preview server
-│       ├── public/                     # Static browser assets & mirrored sample PDFs
-│       │   └── samples/
-│       └── src/
-│           ├── index.html              # HTML5 root with font & icon preconnects
-│           ├── main.ts                 # Standalone Angular application bootstrap
-│           ├── styles.css              # Global design tokens and typography
-│           └── app/
-│               ├── models/document.model.ts       # Canonical TypeScript domain interfaces
-│               ├── services/auth-persona.service.ts # Role switcher (Staff -> Manager -> Finance -> Auditor)
-│               ├── services/browser-storage.service.ts # Native Web Crypto SHA-256 & localStorage engine
-│               ├── services/document.service.ts   # Dual-mode delegator (Browser vs REST)
-│               └── components/
-│                   ├── dashboard/dashboard.component.ts      # Master Single-File Component
-│                   ├── document-modal/document-modal.component.ts # Detail view & Original File Viewer
-│                   ├── upload-modal/upload-modal.component.ts     # Document upload & preset selector
-│                   └── audit-modal/audit-modal.component.ts       # Cryptographic chain inspector
+│   └── app/                            # Angular 22 (standalone, signals, zoneless, Vitest)
+│       ├── angular.json                # Build configs: default (browser mode), http (talks to the API)
+│       ├── public/samples/             # Sample PDFs used by browser mode
+│       └── src/app/
+│           ├── core/                   # models, workflow rules (mirrors backend), session, API layer
+│           │   ├── api/                # DocumentApi, BrowserDocumentApi (localStorage + Web Crypto), HttpDocumentApi
+│           │   └── auth/               # demo personas, session (JWT in memory), interceptor
+│           ├── layout/                 # shell: sidebar, role switcher, theme toggle
+│           ├── shared/                 # icon, status badge, toasts, formatters
+│           └── features/               # inbox | document (detail page) | upload | audit
 │
 └── backend/                            # .NET 10 LTS Minimal API Enterprise Service
     ├── Dockerfile                      # Multi-stage container definition
     ├── AiDocumentWorkflow.Api/
     │   ├── Program.cs                  # Minimal API bootstrap, OpenAPI, DI, and middleware
     │   ├── appsettings.json            # Base configuration
-    │   ├── Controllers/                # REST endpoints (Documents, Workflow, Audit, Stats)
+    │   ├── Auth/                       # Demo-login JWT (not production auth), actor claims
+    │   ├── Controllers/                # REST endpoints (Auth, Documents, Workflow, Audit, Stats)
     │   ├── Data/AppDbContext.cs        # Entity Framework Core 10 SQLite context
     │   ├── Models/                     # Core Domain Entities (Document, ApprovalStep, AuditLog)
     │   └── Services/                   # Gemini AI Multimodal OCR & SHA-256 Hash Provider
     └── AiDocumentWorkflow.Tests/       # xUnit Automated Unit & Security Test Suite
-        └── WorkflowEngineTests.cs      # Segregation of Duties & cryptographic tamper tests
+        ├── WorkflowEngineTests.cs      # Approval state machine tests
+        └── SecurityAndIntegrityTests.cs # SoD, locking, audit chain, concurrency, upload validation
 ```
 
 ---
