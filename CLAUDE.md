@@ -8,7 +8,6 @@ Read `PLAN.md` (`## Next` first) and `CONTEXT.md` (domain glossary) before worki
 - Backend run: `dotnet run --project backend/AiDocumentWorkflow.Api` (http://localhost:5120)
 - Backend test: `dotnet test backend/AiDocumentWorkflow.Tests/AiDocumentWorkflow.Tests.csproj`
 - Frontend (Angular 22): `cd frontend/app && npm ci && npm start` (browser mode, http://localhost:4200); `npm start -- --configuration http` (uses the API); `npm run build`; `npm test`
-- `frontend/client` is the OLD Angular 19 app, superseded by `frontend/app` (pending deletion; do not edit)
 - Docker: `docker compose up` (API on 5120, SQLite volume `workflow_data`)
 
 ## Architecture

@@ -1,14 +1,14 @@
 # PLAN.md — Redesign + Angular 22 + Audit Fixes
 
-Spec: `docs/superpowers/specs/2026-10-08-redesign-design.md`. Everything below is on branch `feat/redesign-angular22`, **uncommitted**.
+Spec: `docs/superpowers/specs/2026-10-08-redesign-design.md`. Work is split into two PRs: `fix/backend-sod-and-audit` (API) and `feat/angular22-frontend` (web + CI + docs). Merge them together: the API contract changed (JWT, no actor fields in bodies).
 
 ## Milestones
 - [x] **M0** Spec, PLAN.md, CLAUDE.md reviewed and approved; `JwtBearer` package approved.
 - [x] **M1** Backend fixes (findings #1–#7, #11 and extras). Repro tests failed first (5/5 red), then fixed. `dotnet test`: 24/24 pass (7 old + 17 new). Smoke-tested over HTTP: 401 without token, forged body role ignored, SoD, locked fields, 409, CORS allowlist, upload 201/415/403.
 - [x] **M2** Angular 22 workspace `frontend/app` (zoneless, Vitest, TS 6 strict): shell, `DocumentApi` (Browser + Http), session/JWT, build configs `http`, `http-production`.
 - [x] **M3** Pages: inbox, document detail, upload, audit ledger. Verified in browser pane: browser mode (dark + light, desktop + mobile 375px) and HTTP mode against the real API (login, preflight, list, approve = 200). `ng build` (both configs) and `ng test` (19/19) pass.
-  - [ ] **Pending your OK:** delete the old `frontend/client` (my `rm -rf` was declined, so it is still there; nothing references it except CLAUDE.md's "legacy" line).
-- [x] **M4** (partly) README, CI (`frontend/app`, Node 24, http-production build, Vitest) and `.env.example`/docker-compose updated. The old `serve-spa.js` traversal bug (#8) disappears with `frontend/client`; no replacement script was added (use `ng serve`).
+  - [x] Old `frontend/client` deleted (in the frontend PR).
+- [x] **M4** (partly) README, CI (`frontend/app`, Node 24, http-production build, Vitest) and `.env.example`/docker-compose updated. The old `serve-spa.js` traversal bug (#8) is gone with `frontend/client`; no replacement script was added (use `ng serve`).
   - [ ] README screenshots under `docs/assets/screenshots` still show the OLD UI; retake them (needs your OK to use Playwright or manual capture).
 
 ## Audit findings status
@@ -21,7 +21,7 @@ Spec: `docs/superpowers/specs/2026-10-08-redesign-design.md`. Everything below i
 | 5 No concurrency token | Fixed: `Version` token, 409 |
 | 6 CORS any origin | Fixed: allowlist |
 | 7 Upload validation, role from field, random doc number | Fixed (10 MB, PDF/PNG/JPEG, role from claims, Guid-based fallback number, duplicate rejected) |
-| 8 serve-spa traversal | Moot once `frontend/client` is deleted |
+| 8 serve-spa traversal | Fixed by deletion of `frontend/client` |
 | 9 Hardcoded mode/baseUrl, `any`, entity leakage | Fixed (build-time config, typed API, DTOs) |
 | 10 Browser hash chain overstated | Fixed in wording (README, ledger banner); chain is demo-only in browser mode |
 | 11 `EnsureCreated`, string statuses | Migration `InitialCreate` added; constants for statuses/roles (DB columns still strings) |
@@ -50,9 +50,9 @@ Spec: `docs/superpowers/specs/2026-10-08-redesign-design.md`. Everything below i
 ## Decisions log
 - 2026-10-08: Option B (new Angular 22 workspace); demo-login JWT; audit scope frontend + backend.
 - 2026-10-08: Hash routing for static hosting; document detail is one page with sections (not tabs).
-- 2026-10-08: Work stays uncommitted on `feat/redesign-angular22` (split into PRs when you ask to commit).
+- 2026-10-08: Split into two PRs (backend, frontend) off `main`; no auto-merge.
 
 ## Next
-1. You review locally (backend + `npm start -- --configuration http`) and tell me what to change in the UI.
-2. Decide: delete `frontend/client`? Retake README screenshots?
-3. When approved: split into commits/PRs by area (backend fixes; Angular 22 app + CI/README), per the Conventional Commits rule. Command to resume: `git status` on `feat/redesign-angular22`.
+1. Review and merge the two PRs together (backend first is fine; browser mode works without it).
+2. Retake the README screenshots (they still show the old UI).
+3. Before deploying the API: set `Auth__JwtKey`, decide `Auth__EnableDemoLogin`, recreate the SQLite volume (see Known limits).
