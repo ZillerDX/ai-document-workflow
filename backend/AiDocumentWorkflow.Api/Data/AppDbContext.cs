@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AiDocumentWorkflow.Api.Models;
 using AiDocumentWorkflow.Api.Services;
@@ -32,10 +34,42 @@ namespace AiDocumentWorkflow.Api.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Document>()
+                .Property(d => d.Version)
+                .IsConcurrencyToken();
+
+            modelBuilder.Entity<Document>()
+                .HasIndex(d => d.DocumentNumber);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => a.Sequence)
+                .IsUnique();
+
+            modelBuilder.Entity<Document>()
                 .HasMany(d => d.AuditLogs)
                 .WithOne()
                 .HasForeignKey(a => a.DocumentId)
                 .OnDelete(DeleteBehavior.Cascade);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            BumpDocumentVersions();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, System.Threading.CancellationToken cancellationToken = default)
+        {
+            BumpDocumentVersions();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        private void BumpDocumentVersions()
+        {
+            ChangeTracker.DetectChanges();
+            foreach (var entry in ChangeTracker.Entries<Document>().Where(e => e.State == EntityState.Modified))
+            {
+                entry.Entity.Version = entry.OriginalValues.GetValue<int>(nameof(Document.Version)) + 1;
+            }
         }
 
         public void SeedInitialData()
@@ -216,8 +250,10 @@ namespace AiDocumentWorkflow.Api.Data
             // Sort strictly chronologically before chaining
             seedLogs = seedLogs.OrderBy(l => l.Timestamp).ToList();
 
+            long seq = 0;
             foreach (var log in seedLogs)
             {
+                log.Sequence = ++seq;
                 log.PreviousHash = prevHash;
                 log.RecordHash = AuditService.ComputeRecordHash(
                     log.PreviousHash,
@@ -226,6 +262,7 @@ namespace AiDocumentWorkflow.Api.Data
                     log.DocumentNumber,
                     log.Action,
                     log.ActorId,
+                    log.ActorName,
                     log.ActorRole,
                     log.Details,
                     log.PreviousValue,

@@ -11,7 +11,11 @@ namespace AiDocumentWorkflow.Api.Services
 {
     public interface IAuditService
     {
-        Task LogAsync(Guid? documentId, string? docNumber, string action, string actorId, string actorName, string actorRole, string details, string? prevValue = null, string? newValue = null);
+        /// <summary>
+        /// Appends a hash-chained record to the change tracker. It does NOT save: the caller saves once,
+        /// so the business change and its audit record commit atomically.
+        /// </summary>
+        Task StageAsync(Guid? documentId, string? docNumber, string action, string actorId, string actorName, string actorRole, string details, string? prevValue = null, string? newValue = null);
     }
 
     public class AuditService : IAuditService
@@ -24,28 +28,29 @@ namespace AiDocumentWorkflow.Api.Services
             _context = context;
         }
 
-        public static string ComputeRecordHash(string prevHash, DateTime timestamp, Guid? docId, string? docNumber, string action, string actorId, string actorRole, string details, string? prevValue, string? newValue)
+        public static string ComputeRecordHash(string prevHash, DateTime timestamp, Guid? docId, string? docNumber, string action, string actorId, string actorName, string actorRole, string details, string? prevValue, string? newValue)
         {
             var utcTimestamp = timestamp.Kind == DateTimeKind.Utc
                 ? timestamp
                 : DateTime.SpecifyKind(timestamp, DateTimeKind.Utc);
             var ts = utcTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ");
-            var raw = $"{prevHash}|{ts}|{docId}|{docNumber}|{action}|{actorId}|{actorRole}|{details}|{prevValue}|{newValue}";
-            using var sha = SHA256.Create();
-            return Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(raw))).ToLowerInvariant();
+            var raw = $"{prevHash}|{ts}|{docId}|{docNumber}|{action}|{actorId}|{actorName}|{actorRole}|{details}|{prevValue}|{newValue}";
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw))).ToLowerInvariant();
         }
 
-        public async Task LogAsync(Guid? documentId, string? docNumber, string action, string actorId, string actorName, string actorRole, string details, string? prevValue = null, string? newValue = null)
+        public async Task StageAsync(Guid? documentId, string? docNumber, string action, string actorId, string actorName, string actorRole, string details, string? prevValue = null, string? newValue = null)
         {
-            var latestLog = await _context.AuditLogs.OrderByDescending(a => a.Sequence).FirstOrDefaultAsync();
+            // Chain head = highest Sequence among already-staged (unsaved) logs, else the persisted head.
+            var latestLog = _context.AuditLogs.Local.OrderByDescending(a => a.Sequence).FirstOrDefault()
+                            ?? await _context.AuditLogs.OrderByDescending(a => a.Sequence).FirstOrDefaultAsync();
             var prevHash = latestLog?.RecordHash ?? GenesisHash;
             var nextSeq = (latestLog?.Sequence ?? 0) + 1;
             var now = DateTime.UtcNow;
             var timestamp = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc);
 
-            var recordHash = ComputeRecordHash(prevHash, timestamp, documentId, docNumber, action, actorId, actorRole, details, prevValue, newValue);
+            var recordHash = ComputeRecordHash(prevHash, timestamp, documentId, docNumber, action, actorId, actorName, actorRole, details, prevValue, newValue);
 
-            var log = new AuditLog
+            _context.AuditLogs.Add(new AuditLog
             {
                 Id = Guid.NewGuid(),
                 Sequence = nextSeq,
@@ -61,10 +66,7 @@ namespace AiDocumentWorkflow.Api.Services
                 Timestamp = timestamp,
                 PreviousHash = prevHash,
                 RecordHash = recordHash
-            };
-
-            _context.AuditLogs.Add(log);
-            await _context.SaveChangesAsync();
+            });
         }
     }
 }

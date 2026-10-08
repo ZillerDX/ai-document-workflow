@@ -9,6 +9,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Data Source=/data/workflow.db
+      - Auth__JwtKey=${AUTH_JWT_KEY:?set AUTH_JWT_KEY (min 32 chars) in .env}
+      - Auth__EnableDemoLogin=${AUTH_ENABLE_DEMO_LOGIN:-true}
+      - Cors__AllowedOrigins__0=${CORS_ORIGIN_0:-http://localhost:4200}
+      - Gemini__ApiKey=${GEMINI_API_KEY:-}
     volumes:
       - workflow_data:/data
     restart: unless-stopped

@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AiDocumentWorkflow.Api.Auth;
 using AiDocumentWorkflow.Api.Models;
 using AiDocumentWorkflow.Api.Services;
 
 namespace AiDocumentWorkflow.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class WorkflowController : ControllerBase
     {
@@ -19,25 +21,11 @@ namespace AiDocumentWorkflow.Api.Controllers
         }
 
         [HttpPost("{id}/action")]
-        public async Task<ActionResult<Document>> ProcessAction(Guid id, [FromBody] WorkflowActionDto dto)
+        public async Task<ActionResult<DocumentDto>> ProcessAction(Guid id, [FromBody] WorkflowActionDto dto)
         {
-            try
-            {
-                var result = await _workflowService.ProcessActionAsync(id, dto);
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message, role = dto.ActorRole });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var actor = ActorContext.FromPrincipal(User);
+            var result = await _workflowService.ProcessActionAsync(id, dto, actor);
+            return Ok(DocumentDto.From(result));
         }
     }
 }

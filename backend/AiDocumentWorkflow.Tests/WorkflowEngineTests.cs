@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using AiDocumentWorkflow.Api.Auth;
 using AiDocumentWorkflow.Api.Data;
 using AiDocumentWorkflow.Api.Models;
 using AiDocumentWorkflow.Api.Services;
@@ -75,17 +76,11 @@ namespace AiDocumentWorkflow.Tests
             context.Documents.Add(doc);
             await context.SaveChangesAsync();
 
-            var action = new WorkflowActionDto
-            {
-                Action = "Approve",
-                ActorId = "usr-mgr-01",
-                ActorName = "Sarah Connor",
-                ActorRole = "Manager",
-                Comment = "Operational specs verified."
-            };
+            var action = new WorkflowActionDto { Action = "Approve", Comment = "Operational specs verified." };
+            var actionActor = new ActorContext("usr-mgr-01", "Sarah Connor", "Manager");
 
             // Act
-            var result = await workflowService.ProcessActionAsync(doc.Id, action);
+            var result = await workflowService.ProcessActionAsync(doc.Id, action, actionActor);
 
             // Assert
             Assert.Equal("PendingLevel2", result.Status);
@@ -110,17 +105,11 @@ namespace AiDocumentWorkflow.Tests
             context.Documents.Add(doc);
             await context.SaveChangesAsync();
 
-            var action = new WorkflowActionDto
-            {
-                Action = "Approve",
-                ActorId = "usr-fin-01",
-                ActorName = "David Sterling",
-                ActorRole = "Finance",
-                Comment = "Budget disbursement approved."
-            };
+            var action = new WorkflowActionDto { Action = "Approve", Comment = "Budget disbursement approved." };
+            var actionActor = new ActorContext("usr-fin-01", "David Sterling", "Finance");
 
             // Act
-            var result = await workflowService.ProcessActionAsync(doc.Id, action);
+            var result = await workflowService.ProcessActionAsync(doc.Id, action, actionActor);
 
             // Assert
             Assert.Equal("Approved", result.Status);
@@ -144,29 +133,17 @@ namespace AiDocumentWorkflow.Tests
             await context.SaveChangesAsync();
 
             // 1. Manager requests revision
-            var revisionAction = new WorkflowActionDto
-            {
-                Action = "RequestRevision",
-                ActorId = "usr-mgr-01",
-                ActorName = "Sarah Connor",
-                ActorRole = "Manager",
-                Comment = "Please correct invoice subtotal."
-            };
-            var revisedDoc = await workflowService.ProcessActionAsync(doc.Id, revisionAction);
+            var revisionAction = new WorkflowActionDto { Action = "RequestRevision", Comment = "Please correct invoice subtotal." };
+            var revisionActionActor = new ActorContext("usr-mgr-01", "Sarah Connor", "Manager");
+            var revisedDoc = await workflowService.ProcessActionAsync(doc.Id, revisionAction, revisionActionActor);
 
             Assert.Equal("RevisionRequested", revisedDoc.Status);
             Assert.Equal("RevisionRequested", revisedDoc.ApprovalSteps.First(s => s.StepNumber == 1).Status);
 
             // 2. Staff resubmits corrected document
-            var resubmitAction = new WorkflowActionDto
-            {
-                Action = "Resubmit",
-                ActorId = "usr-staff-01",
-                ActorName = "Elena Vance",
-                ActorRole = "Staff",
-                Comment = "Corrected line item figures."
-            };
-            var resubmittedDoc = await workflowService.ProcessActionAsync(doc.Id, resubmitAction);
+            var resubmitAction = new WorkflowActionDto { Action = "Resubmit", Comment = "Corrected line item figures." };
+            var resubmitActionActor = new ActorContext("usr-staff-01", "Elena Vance", "Staff");
+            var resubmittedDoc = await workflowService.ProcessActionAsync(doc.Id, resubmitAction, resubmitActionActor);
 
             // Assert: Returned to Level 1 Manager queue
             Assert.Equal("PendingLevel1", resubmittedDoc.Status);
@@ -189,17 +166,12 @@ namespace AiDocumentWorkflow.Tests
             context.Documents.Add(doc);
             await context.SaveChangesAsync();
 
-            var action = new WorkflowActionDto
-            {
-                Action = "Approve",
-                ActorId = "usr-staff-01",
-                ActorName = "Elena Vance",
-                ActorRole = "Staff"
-            };
+            var action = new WorkflowActionDto { Action = "Approve" };
+            var actionActor = new ActorContext("usr-staff-01", "Elena Vance", "Staff");
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                workflowService.ProcessActionAsync(doc.Id, action));
+                workflowService.ProcessActionAsync(doc.Id, action, actionActor));
 
             Assert.Contains("Manager", ex.Message);
         }
@@ -216,17 +188,12 @@ namespace AiDocumentWorkflow.Tests
             context.Documents.Add(doc);
             await context.SaveChangesAsync();
 
-            var action = new WorkflowActionDto
-            {
-                Action = "Approve",
-                ActorId = "usr-mgr-01",
-                ActorName = "Sarah Connor",
-                ActorRole = "Manager"
-            };
+            var action = new WorkflowActionDto { Action = "Approve" };
+            var actionActor = new ActorContext("usr-mgr-01", "Sarah Connor", "Manager");
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                workflowService.ProcessActionAsync(doc.Id, action));
+                workflowService.ProcessActionAsync(doc.Id, action, actionActor));
 
             Assert.Contains("Finance", ex.Message);
         }
@@ -243,17 +210,12 @@ namespace AiDocumentWorkflow.Tests
             context.Documents.Add(doc);
             await context.SaveChangesAsync();
 
-            var action = new WorkflowActionDto
-            {
-                Action = "Approve",
-                ActorId = "usr-audit-01",
-                ActorName = "Morgan Hayes",
-                ActorRole = "Auditor"
-            };
+            var action = new WorkflowActionDto { Action = "Approve" };
+            var actionActor = new ActorContext("usr-audit-01", "Morgan Hayes", "Auditor");
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                workflowService.ProcessActionAsync(doc.Id, action));
+                workflowService.ProcessActionAsync(doc.Id, action, actionActor));
 
             Assert.Contains("Auditor", ex.Message);
         }
@@ -267,9 +229,12 @@ namespace AiDocumentWorkflow.Tests
             var docId = Guid.NewGuid();
 
             // Act: Create 3 sequential audit logs
-            await auditService.LogAsync(docId, "DOC-101", "Uploaded", "usr-1", "Elena", "Staff", "Initial upload");
-            await auditService.LogAsync(docId, "DOC-101", "AiAnalyzed", "sys-ai", "Gemini", "AI", "OCR completed");
-            await auditService.LogAsync(docId, "DOC-101", "ApprovedLevel1", "usr-2", "Sarah", "Manager", "Approved");
+            await auditService.StageAsync(docId, "DOC-101", "Uploaded", "usr-1", "Elena", "Staff", "Initial upload");
+            await context.SaveChangesAsync();
+            await auditService.StageAsync(docId, "DOC-101", "AiAnalyzed", "sys-ai", "Gemini", "AI", "OCR completed");
+            await context.SaveChangesAsync();
+            await auditService.StageAsync(docId, "DOC-101", "ApprovedLevel1", "usr-2", "Sarah", "Manager", "Approved");
+            await context.SaveChangesAsync();
 
             var logs = await context.AuditLogs.OrderBy(a => a.Sequence).ToListAsync();
 
@@ -296,6 +261,7 @@ namespace AiDocumentWorkflow.Tests
                 logs[1].DocumentNumber, 
                 logs[1].Action, 
                 logs[1].ActorId, 
+                logs[1].ActorName,
                 logs[1].ActorRole, 
                 logs[1].Details, 
                 logs[1].PreviousValue, 

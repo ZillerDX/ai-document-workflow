@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AiDocumentWorkflow.Api.Data;
@@ -9,6 +10,7 @@ using AiDocumentWorkflow.Api.Models;
 namespace AiDocumentWorkflow.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class StatsController : ControllerBase
     {
@@ -33,11 +35,13 @@ namespace AiDocumentWorkflow.Api.Controllers
             var decidedTotal = approvedDocs + rejectedDocs;
             var approvalRate = decidedTotal > 0 ? Math.Round(((double)approvedDocs / decidedTotal) * 100.0, 1) : 100.0;
 
-            var approvedSpend = docs.Where(d => d.Status == "Approved").Sum(d => d.TotalAmount);
-            var pendingSpend = docs.Where(d => d.Status == "PendingLevel1" || d.Status == "PendingLevel2").Sum(d => d.TotalAmount);
+            // Financial totals are hidden from Staff.
+            var canSeeTotals = !User.IsInRole(Roles.Staff);
+            var approvedSpend = canSeeTotals ? docs.Where(d => d.Status == "Approved").Sum(d => d.TotalAmount) : 0m;
+            var pendingSpend = canSeeTotals ? docs.Where(d => d.Status == "PendingLevel1" || d.Status == "PendingLevel2").Sum(d => d.TotalAmount) : 0m;
 
             var recentLogs = await _context.AuditLogs
-                .OrderByDescending(a => a.Timestamp)
+                .OrderByDescending(a => a.Sequence)
                 .Take(7)
                 .Select(a => new RecentActivityDto
                 {
