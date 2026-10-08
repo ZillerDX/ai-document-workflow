@@ -16,32 +16,32 @@
 
 ## 📸 Visual Showcase & Architectural Highlights
 
-### 1. Executive Operations Dashboard in Clean Light Mode (with Instant Dark Mode Toggle)
-High-density financial operations dashboard with real-time KPI metrics, streamlined role selection, smart queue tabs, single-line 52px table rows, and instant Sun/Moon theme toggling.
-![Hero Executive Dashboard in Light Mode](docs/assets/screenshots/hero_dashboard_light_mode.png)
+### 1. Role-based inbox
+The inbox opens on "Needs my action" for the current role, with compact KPIs, queue tabs, search and a type filter. Here: Manager (Sarah Connor) with two documents waiting for a Level 1 decision.
+![Role-based inbox](docs/assets/screenshots/hero_dashboard_light_mode.png)
 
 ---
 
-### 2. Deep Multimodal AI Audit & "Open Original File" Modal
-Itemized invoice breakdown, Gemini multimodal OCR extraction, tax calculation mismatch anomaly alert (15% billed vs 7% statutory), and direct access to open the original source PDF.
-![Document Detail Modal with AI Anomaly](docs/assets/screenshots/document_detail_tax_anomaly.png)
+### 2. Document page with AI anomaly
+One page per document: approval progress, AI analysis (the tax mismatch is flagged: 15% billed vs 7% statutory), details with inline correction, line items and history. The action panel on the right holds the decision.
+![Document page with AI anomaly](docs/assets/screenshots/document_detail_tax_anomaly.png)
 
 ---
 
-### 3. Strict Segregation of Duties (SoD) — Manager L1 Review View
-When switched to Manager (Sarah Connor), the interface dynamically adapts with role boundaries, pending spend metrics ($25,410.00), and contextual `Action Required` / `Review L1` approval triggers.
-![Segregation of Duties Manager View](docs/assets/screenshots/segregation_of_duties_manager.png)
+### 3. Segregation of Duties explained in the UI
+A user who may not act sees why instead of disabled buttons. Here: Finance (David Sterling) opens a document still waiting for Level 1. The server enforces the same rules, so the UI is a convenience, not the control.
+![Segregation of duties](docs/assets/screenshots/segregation_of_duties_manager.png)
 
 ---
 
-### 4. Cryptographic Audit & Compliance Ledger (SHA-256 Hash Chain)
-End-to-end forward-chained block ledger (`previousHash` $\to$ `recordHash`). Click "Verify Cryptographic Chain" to confirm 100% tamper-free integrity from genesis to head.
-![Cryptographic Audit Ledger](docs/assets/screenshots/cryptographic_audit_ledger.png)
+### 4. Audit ledger and chain verification (dark theme)
+Every upload, edit and decision is chained (`previousHash` to `recordHash`). Verifying walks the chain from genesis to head. In .NET API mode the server owns the ledger; the browser-only demo computes it client-side and shows a warning that it can be rewritten.
+![Audit ledger](docs/assets/screenshots/cryptographic_audit_ledger.png)
 
 ---
 
 ### 5. Defensive Responsive Design (Tablet Viewport 768px)
-Fluid auto-wrapping KPI cards, clean typography, and horizontal scroll containment on compact displays.
+The shell collapses to a top bar and the content reflows without horizontal page scroll (also checked at 375px).
 ![Responsive Tablet](docs/assets/screenshots/workflow_responsive_tablet.png)
 
 ---
